@@ -1,0 +1,2461 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tüccar Plus">
+<meta name="theme-color" content="#d97706">
+<meta name="format-detection" content="telephone=no">
+
+<link rel="apple-touch-icon" sizes="180x180" href="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f69a.png">
+<link rel="icon" type="image/png" href="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f69a.png">
+
+<link rel="manifest" href='data:application/manifest+json,{"name":"Tüccar Pro Plus","short_name":"Tüccar Plus","start_url":".","display":"standalone","background_color":"#0f172a","theme_color":"#d97706"}'>
+
+<title>Tüccar Pro Plus</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+.no-scrollbar::-webkit-scrollbar { display: none; }
+* { -webkit-tap-highlight-color: transparent; }
+
+header { padding-top: max(10px, env(safe-area-inset-top)) !important; }
+main { padding-bottom: max(24px, env(safe-area-inset-bottom)) !important; }
+
+@media print {
+* { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+body * { visibility: hidden; }
+#printArea, #printArea * { visibility: visible; }
+#printArea { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 12px; }
+.no-print { display: none !important; }
+}
+</style>
+</head>
+<body class="bg-slate-100 text-slate-800 text-sm antialiased select-none">
+
+<datalist id="urun-listesi"></datalist>
+<input type="file" id="yedek-file" accept=".json" class="hidden" onchange="yedekYukle(event)">
+
+<!-- ÜST MENÜ -->
+<header class="bg-slate-900 text-white sticky top-0 z-30 shadow no-print">
+<div class="max-w-7xl mx-auto px-4 py-2.5 flex justify-between items-center border-b border-slate-800">
+<span class="font-black text-amber-400 tracking-wide flex items-center">
+<i class="fa-solid fa-truck-fast mr-2 text-lg"></i> TOPTAN TÜCCAR PLUS
+</span>
+<div class="flex items-center space-x-1.5">
+<button onclick="yedekIndir()" class="text-xs bg-amber-600 hover:bg-amber-500 px-2.5 py-1 rounded-lg font-bold"><i class="fa-solid fa-cloud-arrow-down mr-1"></i>Yedek Al</button>
+<button onclick="document.getElementById('yedek-file').click()" class="text-xs bg-slate-800 border border-slate-700 px-2.5 py-1 rounded-lg"><i class="fa-solid fa-cloud-arrow-up mr-1"></i>Yükle</button>
+<button onclick="sifirla3Asama()" class="text-xs text-rose-300 border border-rose-800/80 px-2 py-1 rounded-lg hover:bg-rose-950">Sıfırla</button>
+</div>
+</div>
+
+<nav class="max-w-7xl mx-auto px-2 py-2 flex space-x-1.5 overflow-x-auto no-scrollbar text-xs font-bold">
+<button onclick="tab('ozet')" id="b-ozet" class="t-btn bg-amber-500 text-slate-950 px-3.5 py-2 rounded-xl whitespace-nowrap shadow-sm">Genel Durum</button>
+<button onclick="tab('ses')" id="b-ses" class="t-btn bg-slate-800 text-slate-300 px-3.5 py-2 rounded-xl whitespace-nowrap"><i class="fa-solid fa-microphone mr-1 text-amber-400"></i> Sesli Komut</button>
+<button onclick="tab('satis')" id="b-satis" class="t-btn bg-slate-800 text-slate-300 px-3.5 py-2 rounded-xl whitespace-nowrap">+ Satış</button>
+<button onclick="tab('alis')" id="b-alis" class="t-btn bg-slate-800 text-slate-300 px-3.5 py-2 rounded-xl whitespace-nowrap">+ Mal Alım</button>
+<button onclick="tab('hareketler')" id="b-hareketler" class="t-btn bg-slate-800 text-slate-300 px-3.5 py-2 rounded-xl whitespace-nowrap">İşlem Geçmişi</button>
+<button onclick="tab('cariler')" id="b-cariler" class="t-btn bg-slate-800 text-slate-300 px-3.5 py-2 rounded-xl whitespace-nowrap">Cari Defteri</button>
+<button onclick="tab('stok')" id="b-stok" class="t-btn bg-slate-800 text-slate-300 px-3.5 py-2 rounded-xl whitespace-nowrap">Depo & Fire</button>
+<button onclick="tab('kasa')" id="b-kasa" class="t-btn bg-slate-800 text-slate-300 px-3.5 py-2 rounded-xl whitespace-nowrap">Kasa & Masraf</button>
+<button onclick="tab('rapor')" id="b-rapor" class="t-btn bg-slate-800 text-slate-300 px-3.5 py-2 rounded-xl whitespace-nowrap">Raporlar & PDF</button>
+</nav>
+</header>
+
+<main class="max-w-7xl mx-auto p-3 md:p-5 space-y-4">
+
+<!-- 1. GENEL DURUM ÖZETİ -->
+<section id="p-ozet" class="tab-pane space-y-4">
+<div class="grid grid-cols-2 md:grid-cols-6 gap-3 no-print">
+<div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
+<span class="text-xs text-slate-500 font-bold block">Bugünkü Ciro</span>
+<span class="text-lg md:text-xl font-black text-slate-800 mt-0.5 block truncate" id="o-ciro">0.00 ₺</span>
+</div>
+<div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
+<span class="text-xs text-indigo-600 font-bold block">Toplam Giderler</span>
+<span class="text-lg md:text-xl font-black text-indigo-600 mt-0.5 block truncate" id="o-gider">0.00 ₺</span>
+</div>
+<div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
+<span class="text-xs text-emerald-600 font-bold block">Net Kâr / Zarar</span>
+<span class="text-lg md:text-xl font-black text-emerald-600 mt-0.5 block truncate" id="o-netkar">0.00 ₺</span>
+<span class="text-[10px] text-slate-400 block" id="o-brutkar">Brüt: 0.00 ₺</span>
+</div>
+<div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
+<span class="text-xs text-amber-600 font-bold block">Piyasa Alacağı</span>
+<span class="text-lg md:text-xl font-black text-amber-600 mt-0.5 block truncate" id="o-alacak">0.00 ₺</span>
+</div>
+<div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
+<span class="text-xs text-rose-600 font-bold block">Piyasa Borcu (Müstahsil)</span>
+<span class="text-lg md:text-xl font-black text-rose-600 mt-0.5 block truncate" id="o-borc">0.00 ₺</span>
+</div>
+<div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm col-span-2 md:col-span-1">
+<span class="text-xs text-sky-600 font-bold block">Kasadaki Nakit</span>
+<span class="text-lg md:text-xl font-black text-sky-600 mt-0.5 block truncate" id="o-kasa">0.00 ₺</span>
+</div>
+</div>
+
+<div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+<h3 class="font-bold text-slate-800 mb-2">Son Satışlar</h3>
+<div class="overflow-x-auto">
+<table class="w-full text-left text-xs">
+<thead class="bg-slate-50 border-b"><tr><th class="p-2.5">Tarih</th><th class="p-2.5">Müşteri</th><th class="p-2.5">Kalemler</th><th class="p-2.5">Açıklama</th><th class="p-2.5">Tutar</th></tr></thead>
+<tbody id="son-satis-tablosu" class="divide-y divide-slate-100"></tbody>
+</table>
+</div>
+</div>
+</section>
+
+<!-- 2. SESLİ KOMUT ASİSTANI -->
+<section id="p-ses" class="tab-pane hidden">
+<div class="bg-white p-5 md:p-8 rounded-3xl border border-amber-200 max-w-2xl mx-auto space-y-5 text-center shadow-sm">
+<div>
+<span class="text-xs bg-amber-100 text-amber-900 font-bold px-3 py-1 rounded-full uppercase tracking-wider">Toplu İşlem Asistanı</span>
+<h3 class="text-xl font-black text-slate-800 mt-2">Tek Seferde Konuş, Tek Onayla Kaydet</h3>
+<p class="text-xs text-slate-500 mt-1">Birden fazla satışı, alışı veya masrafı tek bir cümlede art arda söyleyin.</p>
+</div>
+
+<div class="py-2">
+<button type="button" id="btn-mic" onclick="sesliDinlemeyiBaslat()" class="w-24 h-24 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-3xl shadow-xl transition transform active:scale-95 flex items-center justify-center mx-auto focus:outline-none">
+<i class="fa-solid fa-microphone" id="mic-icon"></i>
+</button>
+<div id="ses-durum" class="text-xs font-bold text-slate-600 mt-3">Mikrofona dokunun ve konuşun</div>
+</div>
+
+<div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 text-xs italic min-h-[45px] flex items-center justify-center text-slate-700" id="ses-metin">
+"Henüz konuşma algılanmadı..."
+</div>
+
+<div id="ses-onay-karti" class="hidden text-left bg-emerald-50 border-2 border-emerald-300 p-4 rounded-2xl space-y-3">
+<div class="flex justify-between items-center border-b border-emerald-200 pb-2">
+<span class="font-bold text-xs text-emerald-900 uppercase">Algılanan İşlemler Listesi</span>
+<span class="text-xs bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full font-bold" id="ses-islem-sayisi">0 İşlem</span>
+</div>
+<div class="text-xs text-slate-700 space-y-2 max-h-60 overflow-y-auto" id="ses-detaylar"></div>
+<div class="flex space-x-2 pt-2">
+<button onclick="sesliIslemiIptalEt()" class="flex-1 py-2.5 border border-slate-300 rounded-xl text-xs font-bold text-slate-600 bg-white">Vazgeç</button>
+<button onclick="topluSesliIslemleriKaydet()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow">Hepsini Onayla ve Kaydet</button>
+</div>
+</div>
+</div>
+</section>
+
+<!-- 3. SATIŞ -->
+<section id="p-satis" class="tab-pane hidden">
+<div class="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 max-w-3xl mx-auto space-y-4 shadow-sm">
+<div class="border-b pb-2 flex justify-between items-center">
+<h3 class="font-bold text-emerald-800 text-base"><i class="fa-solid fa-truck-ramp-box mr-1.5"></i> Satış / Sevkiyat Çıkışı</h3>
+<span class="text-[11px] bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full border border-emerald-200 font-semibold">Kg, Adet & Koli</span>
+</div>
+<form onsubmit="cokluSatisKaydet(event)" class="space-y-4">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+<div>
+<label class="block text-xs font-bold text-slate-600 mb-1">Müşteri</label>
+<div class="space-y-1">
+<input type="text" oninput="cariSelectFiltrele('s-cari', 'Musteri', this.value)" placeholder="🔍 Müşteri ara..." class="w-full border px-2.5 py-1.5 rounded-lg text-xs bg-slate-50 focus:bg-white">
+<div class="flex space-x-1">
+<select id="s-cari" required class="w-full border p-2 rounded-xl bg-slate-50 text-xs focus:ring-2 focus:ring-emerald-500 font-medium"></select>
+<button type="button" onclick="hizliCariEkle('Musteri')" class="bg-slate-200 px-3 rounded-xl font-bold">+</button>
+</div>
+</div>
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-600 mb-1">İşlem Tarihi</label>
+<input type="date" id="s-tarih" required class="w-full border p-2.5 rounded-xl text-xs bg-slate-50">
+</div>
+</div>
+
+<div class="border border-slate-200 rounded-2xl p-3 bg-slate-50/70 space-y-3">
+<div class="flex justify-between items-center">
+<span class="text-xs font-bold text-slate-700 uppercase">Satılacak Ürünler</span>
+<button type="button" onclick="satisSatiriEkle()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow-sm">
+<i class="fa-solid fa-plus mr-1"></i> Yeni Ürün Ekle (<span id="satis-sayac">1</span> Kalem)
+</button>
+</div>
+<div id="satis-kalemleri" class="space-y-2.5"></div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+<div>
+<label class="block text-xs font-bold text-slate-600 mb-1">Ödeme Durumu</label>
+<select id="s-odeme" onchange="satisOdemeDegisti()" class="w-full border p-2.5 rounded-xl bg-slate-50 text-xs font-medium">
+<option value="Veresiye">Açık Hesap (Tamamı Borç)</option>
+<option value="Pesin">Ödendi (Tamamı Tahsil)</option>
+<option value="Kismi">Kısmi Ödeme (Parçalı)</option>
+</select>
+</div>
+<div id="s-kismi-kutu" class="hidden">
+<label class="block text-xs font-bold text-indigo-700 mb-1">Tahsil Edilen (₺)</label>
+<input type="number" step="0.01" id="s-pesinat" placeholder="0.00" class="w-full border-2 border-indigo-300 p-2 rounded-xl text-xs bg-indigo-50/50">
+</div>
+</div>
+
+<div>
+<label class="block text-xs font-bold text-slate-600 mb-1">Açıklama / Not (Opsiyonel)</label>
+<input type="text" id="s-aciklama" placeholder="Not veya sevkiyat detayı..." class="w-full border p-2.5 rounded-xl text-xs bg-slate-50">
+</div>
+
+<div class="flex justify-between items-center bg-emerald-50 p-4 rounded-2xl border border-emerald-200">
+<div>
+<span class="text-xs text-emerald-900 font-bold block uppercase tracking-wider">Fatura Tutarı:</span>
+<span class="text-2xl font-black text-emerald-700" id="s-genel-toplam">0.00 ₺</span>
+</div>
+<button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl text-sm shadow transition">
+<i class="fa-solid fa-check mr-1.5"></i> Satışı Kaydet
+</button>
+</div>
+</form>
+</div>
+</section>
+
+<!-- 4. MAL ALIM (NAKLİYE MASRAFI DENGELİ & KASA BEDELİ) -->
+<section id="p-alis" class="tab-pane hidden">
+<div class="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 max-w-3xl mx-auto space-y-4 shadow-sm">
+<div class="border-b pb-2 flex justify-between items-center">
+<h3 class="font-bold text-sky-800 text-base"><i class="fa-solid fa-wheat-awn mr-1.5"></i> Mal Alım / Tarla Girişi</h3>
+<span class="text-[11px] bg-sky-50 text-sky-700 px-2.5 py-1 rounded-full border border-sky-200 font-semibold">Nakliye Masrafı & Kasa Bedeli</span>
+</div>
+<form onsubmit="cokluAlisKaydet(event)" class="space-y-4">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+<div>
+<label class="block text-xs font-bold text-slate-600 mb-1">Müstahsil / Çiftçi</label>
+<div class="space-y-1">
+<input type="text" oninput="cariSelectFiltrele('a-cari', 'Tedarikci', this.value)" placeholder="🔍 Müstahsil ara..." class="w-full border px-2.5 py-1.5 rounded-lg text-xs bg-slate-50 focus:bg-white">
+<div class="flex space-x-1">
+<select id="a-cari" required class="w-full border p-2 rounded-xl bg-slate-50 text-xs focus:ring-2 focus:ring-sky-500 font-medium"></select>
+<button type="button" onclick="hizliCariEkle('Tedarikci')" class="bg-slate-200 px-3.5 rounded-xl font-bold">+</button>
+</div>
+</div>
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-600 mb-1">Giriş Tarihi</label>
+<input type="date" id="a-tarih" required class="w-full border p-2.5 rounded-xl text-xs bg-slate-50">
+</div>
+</div>
+
+<div class="border border-slate-200 rounded-2xl p-3 bg-slate-50/70 space-y-3">
+<div class="flex justify-between items-center">
+<span class="text-xs font-bold text-slate-700 uppercase">Gelen Ürünler</span>
+<button type="button" onclick="alisSatiriEkle()" class="bg-sky-600 hover:bg-sky-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow-sm">
+<i class="fa-solid fa-plus mr-1"></i> Yeni Ürün Ekle (<span id="alis-sayac">1</span> Kalem)
+</button>
+</div>
+<div id="alis-kalemleri" class="space-y-2.5"></div>
+</div>
+
+<!-- NAKLİYE MASRAFI & KASA BEDELİ KUTULARI -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+<div class="p-3 bg-indigo-50/70 border border-indigo-200 rounded-2xl space-y-1.5">
+<div class="flex justify-between items-center">
+<span class="text-xs font-bold text-indigo-900"><i class="fa-solid fa-truck mr-1 text-indigo-600"></i> Nakliye / Hamaliye Masrafı</span>
+<span class="text-[10px] text-indigo-700 font-semibold">Maliyete Dağıtılır (Kardan Tek Düşer)</span>
+</div>
+<input type="number" step="0.01" id="a-nakliye" oninput="hesaplaAlis()" placeholder="0.00 ₺" class="w-full border p-2 rounded-xl text-xs bg-white font-bold">
+</div>
+
+<div class="p-3 bg-amber-50/70 border border-amber-200 rounded-2xl space-y-1.5">
+<div class="flex justify-between items-center">
+<span class="text-xs font-bold text-amber-900"><i class="fa-solid fa-boxes-packing mr-1 text-amber-600"></i> Müstahsile Kasa Bedeli</span>
+<span id="a-kasa-toplam-goster" class="text-xs font-black text-amber-800">0.00 ₺</span>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<input type="number" id="a-kasa-adet" oninput="hesaplaAlis()" placeholder="Kasa Adet" class="w-full border p-1.5 rounded-xl text-xs bg-white">
+<input type="number" step="0.01" id="a-kasa-fiyat" oninput="hesaplaAlis()" placeholder="Birim Fiyat ₺" class="w-full border p-1.5 rounded-xl text-xs bg-white">
+</div>
+</div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+<div>
+<label class="block text-xs font-bold text-slate-600 mb-1">Ödeme Durumu</label>
+<select id="a-odeme" class="w-full border p-2.5 rounded-xl bg-slate-50 text-xs font-medium">
+<option value="Borc">Açık Hesap (Müstahsile Borç Yaz)</option>
+<option value="Odendi">Ödendi (Kasadan Çıktı)</option>
+</select>
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-600 mb-1">Açıklama / Not (Opsiyonel)</label>
+<input type="text" id="a-aciklama" placeholder="Tarla teslimatı, araç plakası vb..." class="w-full border p-2.5 rounded-xl text-xs bg-slate-50">
+</div>
+</div>
+
+<div class="flex justify-between items-center bg-sky-50 p-4 rounded-2xl border border-sky-200">
+<div>
+<span class="text-xs text-sky-900 font-bold block uppercase tracking-wider">Giriş Tutarı (Mal + Kasa):</span>
+<span class="text-2xl font-black text-sky-700" id="a-genel-toplam">0.00 ₺</span>
+<span class="text-[10px] text-indigo-700 block mt-0.5" id="a-masraf-bilgi"></span>
+</div>
+<button type="submit" class="bg-sky-600 hover:bg-sky-700 text-white font-bold px-6 py-3 rounded-xl text-sm shadow transition">
+<i class="fa-solid fa-arrow-down-to-bracket mr-1.5"></i> Alışı Kaydet
+</button>
+</div>
+</form>
+</div>
+</section>
+
+<!-- 5. İŞLEM GEÇMİŞİ -->
+<section id="p-hareketler" class="tab-pane hidden space-y-3">
+<div class="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 space-y-3 shadow-sm">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 border-b pb-3">
+<div>
+<h3 class="font-bold text-slate-800 text-base">Tüm İşlem Geçmişi</h3>
+<p class="text-xs text-slate-500">Satış, alış, tahsilat, ödeme ve masrafları 'Düzenle' ile değiştirebilirsiniz.</p>
+</div>
+<div class="w-full md:w-64 relative">
+<i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+<input type="text" id="ara-hareket" oninput="renderHareketTablosu()" placeholder="Cari, ürün veya açıklama ara..." class="w-full border pl-8 pr-3 py-1.5 rounded-xl text-xs bg-slate-50">
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left text-xs">
+<thead class="bg-slate-50 border-b text-slate-600">
+<tr>
+<th class="p-2.5">Tarih</th><th class="p-2.5">İşlem</th><th class="p-2.5">Muhatap / Kategori</th><th class="p-2.5">Kalemler / Detay</th><th class="p-2.5">Açıklama</th><th class="p-2.5">Tutar</th><th class="p-2.5 text-right">İşlem</th>
+</tr>
+</thead>
+<tbody id="hareket-tablosu" class="divide-y divide-slate-100"></tbody>
+</table>
+</div>
+</div>
+</section>
+
+<!-- 6. CARİ DEFTERİ -->
+<section id="p-cariler" class="tab-pane hidden space-y-4">
+<div class="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 space-y-4 shadow-sm">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b pb-3">
+<div class="flex space-x-2">
+<button onclick="cariTurFiltrele('Musteri')" id="btn-cari-musteri" class="cari-sub-btn bg-amber-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow-sm">
+<i class="fa-solid fa-store mr-1"></i> Müşteriler
+</button>
+<button onclick="cariTurFiltrele('Tedarikci')" id="btn-cari-tedarikci" class="cari-sub-btn bg-slate-100 text-slate-600 font-bold px-3 py-1.5 rounded-xl text-xs hover:bg-slate-200">
+<i class="fa-solid fa-wheat-awn mr-1"></i> Müstahsiller
+</button>
+</div>
+<div class="flex space-x-2 w-full md:w-auto items-center flex-wrap gap-1">
+<div class="relative flex-1 md:w-48">
+<i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+<input type="text" id="ara-cari" oninput="renderCariTablosu()" placeholder="Cari ismi veya tel ara..." class="w-full border pl-8 pr-3 py-1.5 rounded-xl text-xs bg-slate-50">
+</div>
+<button onclick="topluBildirimModalAc()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm">
+<i class="fa-brands fa-whatsapp mr-1"></i> Toplu Bildirim
+</button>
+<button onclick="hizliCariEkle(aktifCariTuru)" class="bg-slate-800 text-white px-3 py-1.5 rounded-xl text-xs font-bold">+ Yeni Cari</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left text-xs">
+<thead id="cari-tablo-baslik" class="bg-slate-50 border-b text-slate-600"></thead>
+<tbody id="cari-tablosu" class="divide-y divide-slate-100"></tbody>
+</table>
+</div>
+</div>
+</section>
+
+<!-- 7. DEPO & FIRE -->
+<section id="p-stok" class="tab-pane hidden space-y-3">
+<div class="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 space-y-3 shadow-sm">
+<div class="flex justify-between items-center">
+<div>
+<h3 class="font-bold text-slate-800 text-base">Depo Envanter Durumu</h3>
+<p class="text-xs text-slate-500">Stok miktarı, kasa sayısı ve ortalama alış maliyeti.</p>
+</div>
+<button onclick="fireModalAc()" class="bg-rose-100 text-rose-800 border border-rose-300 px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-rose-200">
+<i class="fa-solid fa-dumpster mr-1"></i> Fire Düş
+</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left text-xs">
+<thead class="bg-slate-50 border-b text-slate-600">
+<tr>
+<th class="p-2.5">Ürün</th><th class="p-2.5">Mevcut Stok & Kasa</th><th class="p-2.5">Ort. Alış Maliyeti</th><th class="p-2.5">Toplam Maliyet</th><th class="p-2.5 text-right">İşlem</th>
+</tr>
+</thead>
+<tbody id="stok-tablosu" class="divide-y divide-slate-100"></tbody>
+</table>
+</div>
+</div>
+</section>
+
+<!-- 8. KASA & MASRAF/GİDER -->
+<section id="p-kasa" class="tab-pane hidden space-y-4">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<!-- Müşteri Tahsilatı (Aramalı) -->
+<div class="bg-white p-4 rounded-2xl border border-slate-200 space-y-3 shadow-sm">
+<h4 class="font-bold text-emerald-700 text-sm flex items-center"><i class="fa-solid fa-arrow-down-left mr-2"></i> Müşteri Tahsilatı (Giriş)</h4>
+<form onsubmit="kasaIslemi(event, 'Tahsilat')" class="space-y-2">
+<div>
+<label class="block text-[11px] font-bold text-slate-600 mb-0.5">İşlem Tarihi</label>
+<input type="date" id="k-tahsilat-tarih" required class="w-full border p-2 rounded-xl text-xs bg-slate-50">
+</div>
+<div>
+<label class="block text-[11px] font-bold text-slate-600 mb-0.5">Müşteri Seçin</label>
+<input type="text" oninput="cariSelectFiltrele('k-tahsilat-cari', 'Musteri', this.value)" placeholder="🔍 Müşteri ara..." class="w-full border px-2 py-1 rounded-lg text-xs bg-slate-50 focus:bg-white mb-1">
+<select id="k-tahsilat-cari" required class="w-full border p-2 rounded-xl text-xs bg-slate-50 font-medium"></select>
+</div>
+<input type="number" step="0.01" id="k-tahsilat-tutar" required placeholder="Tutar (₺)" class="w-full border p-2 rounded-xl text-xs">
+<input type="text" id="k-tahsilat-aciklama" placeholder="Açıklama / Not" class="w-full border p-2 rounded-xl text-xs">
+<button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs shadow">Tahsilatı Kaydet</button>
+</form>
+</div>
+
+<!-- Müstahsil Ödemesi (Aramalı) -->
+<div class="bg-white p-4 rounded-2xl border border-slate-200 space-y-3 shadow-sm">
+<h4 class="font-bold text-rose-700 text-sm flex items-center"><i class="fa-solid fa-arrow-up-right mr-2"></i> Müstahsil Ödemesi (Çıkış)</h4>
+<form onsubmit="kasaIslemi(event, 'Odeme')" class="space-y-2">
+<div>
+<label class="block text-[11px] font-bold text-slate-600 mb-0.5">İşlem Tarihi</label>
+<input type="date" id="k-odeme-tarih" required class="w-full border p-2 rounded-xl text-xs bg-slate-50">
+</div>
+<div>
+<label class="block text-[11px] font-bold text-slate-600 mb-0.5">Müstahsil Seçin</label>
+<input type="text" oninput="cariSelectFiltrele('k-odeme-cari', 'Tedarikci', this.value)" placeholder="🔍 Müstahsil ara..." class="w-full border px-2 py-1 rounded-lg text-xs bg-slate-50 focus:bg-white mb-1">
+<select id="k-odeme-cari" required class="w-full border p-2 rounded-xl text-xs bg-slate-50 font-medium"></select>
+</div>
+<input type="number" step="0.01" id="k-odeme-tutar" required placeholder="Ödenen Tutar (₺)" class="w-full border p-2 rounded-xl text-xs">
+<input type="text" id="k-odeme-aciklama" placeholder="Açıklama (Avans vb.)" class="w-full border p-2 rounded-xl text-xs">
+<button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 rounded-xl text-xs shadow">Ödemeyi Kaydet</button>
+</form>
+</div>
+
+<!-- Masraf / Gider -->
+<div class="bg-white p-4 rounded-2xl border border-slate-200 space-y-3 shadow-sm">
+<div class="flex justify-between items-center">
+<h4 class="font-bold text-indigo-700 text-sm flex items-center"><i class="fa-solid fa-receipt mr-2"></i> Masraf / Gider Çıkışı</h4>
+<button type="button" onclick="yeniGiderKategorisiEkle()" class="text-xs text-indigo-600 hover:underline font-bold">+ Yeni Kategori</button>
+</div>
+<form onsubmit="giderKaydet(event)" class="space-y-2.5">
+<div>
+<label class="block text-[11px] font-bold text-slate-600 mb-0.5">İşlem Tarihi</label>
+<input type="date" id="g-tarih" required class="w-full border p-2 rounded-xl text-xs bg-slate-50">
+</div>
+<div>
+<label class="block text-[11px] font-bold text-slate-600 mb-0.5">Gider Kategorisi</label>
+<select id="g-kategori" required class="w-full border p-2 rounded-xl text-xs bg-slate-50 font-medium"></select>
+</div>
+<input type="number" step="0.01" id="g-tutar" required placeholder="Masraf Tutarı (₺)" class="w-full border p-2 rounded-xl text-xs">
+<input type="text" id="g-aciklama" placeholder="Açıklama (Mazot fişi vb.)" class="w-full border p-2 rounded-xl text-xs">
+<button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-xs shadow">Masrafı İşle</button>
+</form>
+</div>
+</div>
+</section>
+
+<!-- 9. RAPORLAR, RENKLİ EKSTRE & FİRE RAPORU -->
+<section id="p-rapor" class="tab-pane hidden space-y-3">
+<div class="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 no-print space-y-4 shadow-sm">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 border-b pb-3">
+<div>
+<h3 class="font-bold text-slate-800 text-base">Raporlar & Renkli Ekstre Merkezi</h3>
+<p class="text-xs text-slate-500">Müşteri ve müstahsil dökümleri, kâr analizleri ve fire zararları.</p>
+</div>
+<button onclick="manuelIslemModalAc()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold shadow-sm">
+<i class="fa-solid fa-plus-minus mr-1"></i> Manuel Borç / Alacak Ekle
+</button>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-4 gap-2.5">
+<div>
+<label class="block text-[11px] font-bold text-slate-600 mb-1">Rapor Türü</label>
+<select id="r-tur" onchange="raporTuruDegisti()" class="w-full border p-2 rounded-xl text-xs bg-slate-50 font-medium">
+<option value="tek-cari">Cari Hesap Ekstresi (Müşteri / Müstahsil)</option>
+<option value="musteri-islemleri">Tüm Müşteri İşlemleri Dökümü</option>
+<option value="mustahsil-islemleri">Tüm Müstahsil İşlemleri Dökümü</option>
+<option value="urun-ozet">Seçili Ürünlerin Satış Özeti</option>
+<option value="gider-raporu">Masraf & Gider Dökümü (Net Kâr)</option>
+<option value="fire-raporu">Depo Fire & Çürük Raporu (Zarar Analizi)</option>
+</select>
+</div>
+
+<div id="r-kutu-cari" class="space-y-1.5 md:col-span-1">
+<div class="flex justify-between items-center">
+<label class="block text-[11px] font-bold text-slate-600">Cari Seçiniz</label>
+<div class="flex space-x-1 text-[10px]">
+<button type="button" onclick="raporCariTurDegis('Musteri')" id="r-btn-musteri" class="font-bold px-1.5 py-0.5 rounded bg-amber-600 text-white">Müşteri</button>
+<button type="button" onclick="raporCariTurDegis('Tedarikci')" id="r-btn-tedarikci" class="font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">Müstahsil</button>
+</div>
+</div>
+<input type="text" id="r-cari-arama" oninput="raporCariFiltrele()" placeholder="Cari ismi ara..." class="w-full border p-1.5 rounded-lg text-xs bg-slate-50">
+<select id="r-cari" class="w-full border p-1.5 rounded-lg text-xs bg-slate-50 font-medium"></select>
+</div>
+
+<div>
+<label class="block text-[11px] font-bold text-slate-600 mb-1">Başlangıç Tarihi</label>
+<input type="date" id="r-bas" class="w-full border p-1.5 rounded-xl text-xs">
+</div>
+<div>
+<label class="block text-[11px] font-bold text-slate-600 mb-1">Bitiş Tarihi</label>
+<input type="date" id="r-bit" class="w-full border p-1.5 rounded-xl text-xs">
+</div>
+</div>
+
+<div id="r-kutu-coklu-urun" class="hidden border border-slate-200 p-3 rounded-xl bg-slate-50/70 space-y-2">
+<div class="flex justify-between items-center">
+<span class="text-xs font-bold text-slate-700">Raporlanacak Ürünleri Seçin:</span>
+<div class="space-x-2">
+<button type="button" onclick="urunSeciminiAyarla(true)" class="text-[11px] text-indigo-600 font-bold hover:underline">Tümünü Seç</button>
+<button type="button" onclick="urunSeciminiAyarla(false)" class="text-[11px] text-slate-500 font-bold hover:underline">Temizle</button>
+</div>
+</div>
+<div id="r-urun-checkbox-kapsayici" class="flex flex-wrap gap-2 max-h-36 overflow-y-auto p-1"></div>
+</div>
+
+<div class="flex space-x-2 pt-1 flex-wrap gap-2">
+<button onclick="raporOlustur()" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white py-2.5 rounded-xl text-xs font-bold">Raporu Hazırla</button>
+<button onclick="window.print()" class="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center">
+<i class="fa-solid fa-file-pdf mr-1.5"></i> PDF İndir / Yazdır
+</button>
+<button id="btn-wa-ekstre" onclick="whatsappEkstrePaylas()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center shadow-sm">
+<i class="fa-brands fa-whatsapp mr-1.5 text-sm"></i> WhatsApp ile Gönder
+</button>
+</div>
+</div>
+
+<div id="printArea" class="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm">
+<div class="border-b pb-2 mb-3 flex justify-between items-center">
+<div>
+<h2 class="font-black text-base text-slate-900 tracking-tight" id="r-baslik-ana">TOPTAN MEYVE-SEBZE DÖKÜMÜ</h2>
+<p class="text-xs text-slate-500" id="r-bilgi"></p>
+</div>
+<span class="text-xs text-slate-400" id="r-tarih"></span>
+</div>
+<div id="r-sonuc" class="text-xs"></div>
+</div>
+</section>
+
+</main>
+
+<!-- MODAL: CARİ DÜZENLEME -->
+<div id="modal-cari-duzenle" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+<div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl space-y-3">
+<div class="flex justify-between items-center border-b pb-2">
+<h3 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-user-pen mr-1.5 text-amber-600"></i> Cari Bilgilerini Düzenle</h3>
+<button onclick="kapatCariDuzenleModal()" class="text-slate-400 hover:text-slate-600 font-bold text-base">&times;</button>
+</div>
+<form onsubmit="kaydetCariDuzenle(event)" class="space-y-2.5 text-xs">
+<input type="hidden" id="cd-id">
+<div>
+<label class="block font-bold text-slate-600 mb-1">Cari Adı / Firma</label>
+<input type="text" id="cd-ad" required class="w-full border p-2 rounded-xl bg-slate-50">
+</div>
+<div>
+<label class="block font-bold text-slate-600 mb-1">Telefon Numarası</label>
+<input type="text" id="cd-tel" placeholder="05XXXXXXXXX" class="w-full border p-2 rounded-xl bg-slate-50">
+</div>
+<div>
+<label class="block font-bold text-slate-600 mb-1">Cari Türü</label>
+<select id="cd-tur" class="w-full border p-2 rounded-xl bg-slate-50 font-bold">
+<option value="Musteri">Müşteri</option>
+<option value="Tedarikci">Müstahsil / Tedarikçi</option>
+</select>
+</div>
+<div class="flex space-x-2 pt-2">
+<button type="button" onclick="kapatCariDuzenleModal()" class="flex-1 py-2 border rounded-xl font-bold text-slate-600">İptal</button>
+<button type="submit" class="flex-1 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl shadow">Güncelle</button>
+</div>
+</form>
+</div>
+</div>
+
+<!-- MODAL: TOPLU WHATSAPP BİLDİRİM MERKEZİ & SIRALI GÖNDERİM SİHİRBAZI -->
+<div id="modal-toplu-bildirim" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+<div class="bg-white rounded-2xl max-w-lg w-full p-5 shadow-2xl space-y-3 max-h-[90vh] flex flex-col">
+<div class="flex justify-between items-center border-b pb-2">
+<div>
+<h3 class="font-bold text-slate-800 text-sm"><i class="fa-brands fa-whatsapp text-emerald-600 mr-1.5 text-base"></i> Toplu WhatsApp Bildirim Merkezi</h3>
+<p class="text-[11px] text-slate-500">Müşterilere güncel borç/bakiye hatırlatması gönderin.</p>
+</div>
+<button onclick="kapatTopluBildirimModal()" class="text-slate-400 hover:text-slate-600 font-bold text-base">&times;</button>
+</div>
+
+<div class="flex justify-between items-center text-xs pt-1">
+<label class="inline-flex items-center space-x-1.5 font-bold cursor-pointer">
+<input type="checkbox" id="tb-tumunu-sec" onchange="topluBildirimTumunuSec(this.checked)" checked class="rounded text-emerald-600">
+<span>Tümünü Seç</span>
+</label>
+<div class="flex items-center space-x-2">
+<span id="tb-secili-sayi" class="text-[11px] text-slate-500 font-bold">0 kişi seçili</span>
+<button type="button" onclick="topluBildirimSiraylaBaslat()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl font-bold text-xs flex items-center shadow">
+<i class="fa-solid fa-paper-plane mr-1.5"></i> Seçilenlere Sırayla Gönder
+</button>
+</div>
+</div>
+
+<div id="tb-liste" class="flex-1 overflow-y-auto space-y-2 text-xs divide-y divide-slate-100 pr-1"></div>
+
+<div class="border-t pt-2.5 flex justify-end">
+<button type="button" onclick="kapatTopluBildirimModal()" class="px-4 py-2 border rounded-xl font-bold text-xs text-slate-600">Kapat</button>
+</div>
+</div>
+</div>
+
+<!-- SIRALI GÖNDERİM FLOATING KART -->
+<div id="kuyruk-kart" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white p-4 rounded-2xl shadow-2xl z-50 hidden border border-slate-700 w-11/12 max-w-md space-y-2 text-xs">
+<div class="flex justify-between items-center">
+<span class="font-bold text-amber-400 flex items-center"><i class="fa-solid fa-paper-plane mr-1.5"></i> Sıralı Mesaj Akışı</span>
+<span id="kuyruk-sayac" class="text-[11px] bg-slate-800 px-2 py-0.5 rounded font-bold">1 / 5</span>
+</div>
+<div id="kuyruk-musteri-ad" class="font-bold text-sm text-white">Ahmet Manav</div>
+<div class="flex space-x-2 pt-1">
+<button onclick="kuyruguDurdur()" class="flex-1 py-2 border border-slate-700 rounded-xl font-bold text-slate-300">Durdur</button>
+<button onclick="kuyruktakiSiradakiMesajiAc()" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold shadow">WhatsApp'ı Aç ➔</button>
+</div>
+</div>
+
+<!-- MODAL: MANUEL BORÇ / ALACAK -->
+<div id="modal-borc" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+<div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-3">
+<div class="flex justify-between items-center border-b pb-2">
+<h3 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-scale-balanced mr-1.5 text-indigo-600"></i> Manuel Borç / Alacak İşlemi</h3>
+<button onclick="kapatBorcModal()" class="text-slate-400 hover:text-slate-600 font-bold text-base">&times;</button>
+</div>
+<form onsubmit="kaydetManuelIslem(event)" class="space-y-2.5 text-xs">
+<div class="grid grid-cols-2 gap-2">
+<div>
+<label class="block font-bold text-slate-600 mb-1">Cari Grubu</label>
+<select id="mi-grup" onchange="manuelIslemCariYukle()" class="w-full border p-2 rounded-xl bg-slate-50 font-bold">
+<option value="Musteri">Müşteri</option>
+<option value="Tedarikci">Müstahsil / Tedarikçi</option>
+</select>
+</div>
+<div>
+<label class="block font-bold text-slate-600 mb-1">İşlem Yönü</label>
+<select id="mi-yon" class="w-full border p-2 rounded-xl bg-slate-50 font-bold text-indigo-700">
+<option value="Borc">Borç Ekle (+ Borç)</option>
+<option value="Alacak">Alacak Ekle (+ Alacak)</option>
+</select>
+</div>
+</div>
+<div>
+<label class="block font-bold text-slate-600 mb-1">Cari Seçin</label>
+<select id="mi-cari" required class="w-full border p-2 rounded-xl bg-slate-50 font-medium"></select>
+</div>
+<div>
+<label class="block font-bold text-slate-600 mb-1">Tutar (₺)</label>
+<input type="number" step="0.01" id="mi-tutar" required placeholder="0.00" class="w-full border p-2 rounded-xl">
+</div>
+<div>
+<label class="block font-bold text-slate-600 mb-1">İşlem Tarihi</label>
+<input type="date" id="mi-tarih" required class="w-full border p-2 rounded-xl bg-slate-50">
+</div>
+<div>
+<label class="block font-bold text-slate-600 mb-1">Açıklama / Mutabakat Notu</label>
+<input type="text" id="mi-aciklama" required placeholder="Örn: Eski Bakiye Devri, Nakliye, Hamaliye Farkı" class="w-full border p-2 rounded-xl">
+</div>
+<div class="flex space-x-2 pt-2">
+<button type="button" onclick="kapatBorcModal()" class="flex-1 py-2 border rounded-xl font-bold text-slate-600">İptal</button>
+<button type="submit" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow">İşlemi Kaydet</button>
+</div>
+</form>
+</div>
+</div>
+
+<script>
+const STORAGE_KEY = 'TUCCAR_DATA_V2_PLUS';
+
+let DB = {
+cariler: [],
+stoklar: {},
+hareketler: [],
+giderKategorileri: ['Mazot', 'Nakliye', 'Hamaliye', 'Kira', 'Poşet/Koli', 'İşçilik', 'Yemek']
+};
+let aktifCariTuru = 'Musteri';
+let raporAktifCariTuru = 'Musteri';
+let satisSayisi = 0;
+let alisSayisi = 0;
+let hazirTopluIslemler = [];
+let topluKuyruk = [];
+let kuyrukIndex = 0;
+
+function tarihBirlestir(dStr) {
+if (!dStr) dStr = new Date().toISOString().split('T')[0];
+const now = new Date();
+const hh = String(now.getHours()).padStart(2, '0');
+const mm = String(now.getMinutes()).padStart(2, '0');
+const ss = String(now.getSeconds()).padStart(2, '0');
+return `${dStr}T${hh}:${mm}:${ss}`;
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+if (navigator.storage && navigator.storage.persist) {
+navigator.storage.persist();
+}
+
+const raw = localStorage.getItem(STORAGE_KEY);
+if (raw) {
+try { DB = JSON.parse(raw); } catch(e){}
+} else {
+const v1 = localStorage.getItem('TUCCAR_DATA_V15');
+if (v1) {
+try { DB = JSON.parse(v1); save(); } catch(e){}
+}
+}
+
+if (!DB.giderKategorileri || DB.giderKategorileri.length === 0) {
+DB.giderKategorileri = ['Mazot', 'Nakliye', 'Hamaliye', 'Kira', 'Poşet/Koli', 'İşçilik', 'Yemek'];
+}
+if (DB.cariler.length === 0) {
+DB.cariler = [
+{ id: 'C_1', ad: 'Ahmet Manav', tur: 'Musteri', tel: '05321112233', bakiye: 0, kap: 0 },
+{ id: 'C_2', ad: 'Çiftçi Ali', tur: 'Tedarikci', tel: '05423334455', bakiye: 0, kap: 0 }
+];
+save();
+}
+const bugun = new Date().toISOString().split('T')[0];
+document.getElementById('s-tarih').value = bugun;
+document.getElementById('a-tarih').value = bugun;
+document.getElementById('g-tarih').value = bugun;
+document.getElementById('k-tahsilat-tarih').value = bugun;
+document.getElementById('k-odeme-tarih').value = bugun;
+document.getElementById('mi-tarih').value = bugun;
+document.getElementById('r-bit').value = bugun;
+document.getElementById('r-bas').value = bugun.substring(0, 8) + '01';
+document.getElementById('r-tarih').innerText = new Date().toLocaleDateString('tr-TR');
+
+satisSatiriEkle();
+alisSatiriEkle();
+render();
+raporCariFiltrele();
+});
+
+function save() {
+localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
+render();
+}
+
+function cariSelectFiltrele(selectId, tur, query) {
+const sel = document.getElementById(selectId);
+if (!sel) return;
+const q = (query || '').toLowerCase().trim();
+const curVal = sel.value;
+let cariler = DB.cariler.filter(c => c.tur === tur);
+if (q) cariler = cariler.filter(c => c.ad.toLowerCase().includes(q) || (c.tel && c.tel.includes(q)));
+sel.innerHTML = '<option value="">Seçiniz...</option>' + cariler.map(c => `<option value="${c.id}">${c.ad}</option>`).join('');
+if (curVal && cariler.some(c => c.id === curVal)) {
+sel.value = curVal;
+}
+}
+
+// ================= TOPLU WHATSAPP SIRALI GÖNDERİM SİHİRBAZI =================
+function topluBildirimModalAc() {
+const wrap = document.getElementById('tb-liste');
+const musteriler = DB.cariler.filter(c => c.tur === 'Musteri');
+
+if (musteriler.length === 0) {
+wrap.innerHTML = '<p class="text-slate-400 py-4 text-center">Kayıtlı müşteri bulunamadı.</p>';
+document.getElementById('modal-toplu-bildirim').classList.remove('hidden');
+return;
+}
+
+let html = '';
+musteriler.forEach((c) => {
+const durum = c.bakiye > 0 ? `${c.bakiye.toFixed(2)} ₺ Borçlu` : (c.bakiye < 0 ? `${Math.abs(c.bakiye).toFixed(2)} ₺ Alacaklı` : 'Hesap Dengede (0 ₺)');
+const borcluMu = c.bakiye > 0;
+html += `
+<div class="flex justify-between items-center p-2 rounded-xl border border-slate-200 bg-white">
+<div class="flex items-center space-x-2">
+<input type="checkbox" value="${c.id}" class="tb-cb rounded text-emerald-600" ${borcluMu ? 'checked' : ''} onchange="topluBildirimSayisiniGuncelle()">
+<div>
+<span class="font-bold text-slate-800 block">${c.ad}</span>
+<span class="text-[11px] text-slate-400">${c.tel || 'Tel Kayıtlı Değil'}</span>
+</div>
+</div>
+<div class="flex items-center space-x-2">
+<span class="font-black text-xs ${borcluMu ? 'text-amber-600' : 'text-slate-600'}">${durum}</span>
+<button type="button" onclick="whatsappBakiyeGonder('${c.id}')" title="Mesaj Gönder" class="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 p-1.5 rounded-lg font-bold border border-emerald-200">
+<i class="fa-brands fa-whatsapp text-sm"></i>
+</button>
+</div>
+</div>
+`;
+});
+wrap.innerHTML = html;
+topluBildirimSayisiniGuncelle();
+document.getElementById('modal-toplu-bildirim').classList.remove('hidden');
+}
+
+function kapatTopluBildirimModal() {
+document.getElementById('modal-toplu-bildirim').classList.add('hidden');
+}
+
+function topluBildirimTumunuSec(durum) {
+document.querySelectorAll('.tb-cb').forEach(cb => cb.checked = durum);
+topluBildirimSayisiniGuncelle();
+}
+
+function topluBildirimSayisiniGuncelle() {
+const sayi = document.querySelectorAll('.tb-cb:checked').length;
+document.getElementById('tb-secili-sayi').innerText = `${sayi} kişi seçili`;
+}
+
+function topluBildirimSiraylaBaslat() {
+const seciliIds = Array.from(document.querySelectorAll('.tb-cb:checked')).map(cb => cb.value);
+if (seciliIds.length === 0) {
+alert("Lütfen en az bir müşteri seçiniz!");
+return;
+}
+topluKuyruk = seciliIds;
+kuyrukIndex = 0;
+kapatTopluBildirimModal();
+kuyruktakiSiradakiMesajiGoster();
+}
+
+function kuyruktakiSiradakiMesajiGoster() {
+if (kuyrukIndex >= topluKuyruk.length) {
+document.getElementById('kuyruk-kart').classList.add('hidden');
+alert("Tüm seçilen müşterilere mesaj akışı tamamlandı!");
+return;
+}
+const cid = topluKuyruk[kuyrukIndex];
+const c = DB.cariler.find(x => x.id === cid);
+if (!c) { kuyrukIndex++; kuyruktakiSiradakiMesajiGoster(); return; }
+
+document.getElementById('kuyruk-sayac').innerText = `${kuyrukIndex + 1} / ${topluKuyruk.length}`;
+document.getElementById('kuyruk-musteri-ad').innerText = `${c.ad} (${c.bakiye.toFixed(2)} ₺)`;
+document.getElementById('kuyruk-kart').classList.remove('hidden');
+}
+
+function kuyruktakiSiradakiMesajiAc() {
+const cid = topluKuyruk[kuyrukIndex];
+whatsappBakiyeGonder(cid);
+kuyrukIndex++;
+kuyruktakiSiradakiMesajiGoster();
+}
+
+function kuyruguDurdur() {
+document.getElementById('kuyruk-kart').classList.add('hidden');
+topluKuyruk = [];
+kuyrukIndex = 0;
+}
+
+// ================= WHATSAPP İLE MESAJ & EKSTRE GÖNDERME =================
+function whatsappBakiyeGonder(cariId) {
+const c = DB.cariler.find(x => x.id === cariId);
+if (!c) return;
+const tel = (c.tel || '').replace(/\D/g, '');
+if (!tel) { alert(`${c.ad} için telefon numarası kayıtlı değil!`); return; }
+const formattedTel = tel.startsWith('0') ? '9' + tel : (tel.startsWith('90') ? tel : '90' + tel);
+const durum = c.bakiye > 0 ? `${c.bakiye.toFixed(2)} ₺ BORCUNUZ bulunmaktadır.` : (c.bakiye < 0 ? `${Math.abs(c.bakiye).toFixed(2)} ₺ ALACAĞINIZ bulunmaktadır.` : 'Hesabınız dengededir (0.00 ₺).');
+
+let msg = `Sayın ${c.ad},\n${new Date().toLocaleDateString('tr-TR')} tarihi itibarıyla güncel hesap özetiniz:\n• Net Bakiye: ${durum}\n`;
+if (c.tur === 'Tedarikci' && c.kap) {
+msg += `• Kasa/Kap Adedi: ${c.kap} Adet.\n`;
+}
+msg += `Bilgilerinize sunarız.`;
+window.open(`https://wa.me/${formattedTel}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+function whatsappEkstrePaylas() {
+const cid = document.getElementById('r-cari').value;
+const c = DB.cariler.find(x => x.id === cid);
+if (!c) { alert("Lütfen önce listeden bir cari seçiniz!"); return; }
+const tel = (c.tel || '').replace(/\D/g, '');
+const formattedTel = tel.startsWith('0') ? '9' + tel : (tel.startsWith('90') ? tel : '90' + tel);
+
+const bas = document.getElementById('r-bas').value;
+const bit = document.getElementById('r-bit').value;
+let liste = DB.hareketler.filter(h => h.cariId === cid && (!bas || h.tarih >= bas) && (!bit || h.tarih <= bit + 'T23:59:59')).reverse();
+
+let text = `*${c.ad.toUpperCase()} - CARİ MUTABAKAT EKSTRESİ*\n`;
+text += `Dönem: ${bas || 'İlk'} - ${bit || 'Bugün'}\n---------------------------------\n`;
+
+liste.forEach((h, i) => {
+let t = h.tarih.split('T')[0];
+let tip = h.tip.replace('_', ' ');
+text += `${i + 1}) ${t} | ${tip}: ${h.toplam.toFixed(2)} ₺\n`;
+if (h.kalemler && h.kalemler.length > 0) {
+h.kalemler.forEach(k => {
+text += ` • ${k.urun}: ${k.miktar} ${k.birimTuru || 'kg'} × ${k.birim.toFixed(2)}₺ = ${k.toplam.toFixed(2)}₺\n`;
+});
+}
+if (h.kasaBedeli > 0) {
+text += ` • Kasa Bedeli: ${h.kasaAdet} adet × ${h.kasaFiyat.toFixed(2)}₺ = ${h.kasaBedeli.toFixed(2)}₺\n`;
+}
+if (h.aciklama) text += ` Not: ${h.aciklama}\n`;
+});
+
+text += `---------------------------------\n*GÜNCEL NET BAKİYE:* ${c.bakiye.toFixed(2)} ₺\n`;
+if (c.tur === 'Tedarikci' && c.kap) {
+text += `*KASA SAYISI:* ${c.kap} Adet\n`;
+}
+
+if (tel) {
+window.open(`https://wa.me/${formattedTel}?text=${encodeURIComponent(text)}`, '_blank');
+} else {
+if (navigator.share) {
+navigator.share({ title: `${c.ad} Ekstre`, text }).catch(() => {});
+} else {
+prompt("Telefon numarası kayıtlı değil. Mesajı kopyalayıp WhatsApp'tan atabilirsiniz:", text);
+}
+}
+}
+
+// ================= SES MOTORU =================
+let sesRecognition = null;
+let dinlemeAktif = false;
+
+function sesliDinlemeyiBaslat() {
+const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (!SpeechRec) { alert("Tarayıcınız ses tanımayı desteklemiyor. (Safari ayarlarından mikrofon iznini kontrol edin)."); return; }
+if (dinlemeAktif) { if (sesRecognition) sesRecognition.stop(); return; }
+
+sesRecognition = new SpeechRec();
+sesRecognition.lang = 'tr-TR';
+sesRecognition.interimResults = false;
+sesRecognition.maxAlternatives = 1;
+
+const btn = document.getElementById('btn-mic');
+const durum = document.getElementById('ses-durum');
+const metin = document.getElementById('ses-metin');
+
+sesRecognition.onstart = () => {
+dinlemeAktif = true;
+btn.classList.remove('bg-amber-500');
+btn.classList.add('bg-rose-600', 'animate-pulse');
+durum.innerText = "Dinleniyor... Konuşmanızı tamamlayınca duracaktır.";
+durum.classList.add('text-rose-600');
+};
+
+sesRecognition.onresult = (event) => {
+const cumle = event.results[0][0].transcript;
+metin.innerText = `"${cumle}"`;
+topluSesliKomutCozumle(cumle);
+};
+
+sesRecognition.onerror = () => {
+durum.innerText = "Ses algılanamadı veya mikrofon izni verilmedi.";
+durum.classList.remove('text-rose-600');
+};
+
+sesRecognition.onend = () => {
+dinlemeAktif = false;
+btn.classList.add('bg-amber-500');
+btn.classList.remove('bg-rose-600', 'animate-pulse');
+durum.innerText = "Mikrofona dokunun ve konuşun";
+durum.classList.remove('text-rose-600');
+};
+
+try { sesRecognition.start(); } catch(e) { console.error(e); }
+}
+
+function cumledenKalemleriAyikla(txt) {
+const kalemler = [];
+const regex = /(\d+(?:[.,]\d+)?)\s*(kilo|kg|adet|tane|koli|kasa)?\s+([a-zçğıöşü\s]+?)\s+(\d+(?:[.,]\d+)?)\s*(?:lira|tl|liradan|liralık)?(?=\s+(?:\d+|ve|virgül|$)|$)/gi;
+let match;
+while ((match = regex.exec(txt)) !== null) {
+const miktar = parseFloat(match[1].replace(',', '.'));
+let birimHam = (match[2] || 'kg').toLowerCase();
+let birimTuru = 'kg';
+if (birimHam === 'adet' || birimHam === 'tane') birimTuru = 'adet';
+else if (birimHam === 'koli' || birimHam === 'kasa') birimTuru = 'koli';
+
+let urun = match[3].trim().replace(/^(kilo|kg|adet|tane|koli|kasa|ve|virgül)\s+/gi, '').trim();
+const fiyat = parseFloat(match[4].replace(',', '.'));
+if (miktar > 0 && fiyat > 0 && urun.length > 1) {
+urun = urun.charAt(0).toUpperCase() + urun.slice(1);
+kalemler.push({ urun, birimTuru, miktar, birim: fiyat, toplam: miktar * fiyat, birimMaliyet: 0, kar: 0 });
+}
+if (kalemler.length >= 30) break;
+}
+return kalemler;
+}
+
+function topluSesliKomutCozumle(tamMetin) {
+hazirTopluIslemler = [];
+let txt = tamMetin.toLowerCase().replace(/,/g, ' ');
+
+txt = txt.replace(/\s+(?:bir de|ardından|sonra|ayrıyetten)\s+/gi, ' ayrıca ');
+txt = txt.replace(/\s+ve\s+(?=[a-zçğıöşü\s]+(?:\sal\b|\ssat\b|\stahsilat\b|\södeme\b|\smasraf\b|\sgider\b|\sborç\b))/gi, ' ayrıca ');
+
+const komutParcalari = txt.split(/\s*ayrıca\s*|\s*;\s*|\s*\.\s*/).map(p => p.trim()).filter(p => p.length > 2);
+
+komutParcalari.forEach(p => {
+const sayilar = p.match(/\d+([.,]\d+)?/g) ? p.match(/\d+([.,]\d+)?/g).map(n => parseFloat(n.replace(',', '.'))) : [];
+
+if (p.includes('masraf') || p.includes('gider')) {
+let kat = DB.giderKategorileri.find(k => p.includes(k.toLowerCase())) || 'Genel Masraf';
+let tutar = sayilar[0] || 500;
+hazirTopluIslemler.push({ tip: 'Gider', kategori: kat, toplam: tutar, aciklama: '' });
+return;
+}
+if (p.includes('tahsilat') || p.includes('tahsil')) {
+let cari = DB.cariler.find(c => c.tur === 'Musteri' && p.includes(c.ad.toLowerCase()));
+let tutar = sayilar[0] || 1000;
+hazirTopluIslemler.push({
+tip: 'Tahsilat', cariId: cari ? cari.id : '', cariAd: cari ? cari.ad : '',
+cariTur: 'Musteri', toplam: tutar, aciklama: ''
+});
+return;
+}
+if (p.includes('ödeme') || p.includes('ödedim') || p.includes('verdim')) {
+let cari = DB.cariler.find(c => c.tur === 'Tedarikci' && p.includes(c.ad.toLowerCase()));
+let tutar = sayilar[0] || 1000;
+hazirTopluIslemler.push({
+tip: 'Odeme', cariId: cari ? cari.id : '', cariAd: cari ? cari.ad : '',
+cariTur: 'Tedarikci', toplam: tutar, aciklama: ''
+});
+return;
+}
+if (p.includes('borç') || p.includes('borcu')) {
+let cari = DB.cariler.find(c => c.tur === 'Musteri' && p.includes(c.ad.toLowerCase()));
+let tutar = sayilar[0] || 500;
+hazirTopluIslemler.push({
+tip: 'Manuel_Islem', altTip: 'Borc', cariId: cari ? cari.id : '', cariAd: cari ? cari.ad : '',
+cariTur: 'Musteri', toplam: tutar, aciklama: ''
+});
+return;
+}
+if (p.includes('sat') || p.includes('satış') || p.includes('sevk')) {
+let cari = DB.cariler.find(c => c.tur === 'Musteri' && p.includes(c.ad.toLowerCase()));
+let kalemler = cumledenKalemleriAyikla(p);
+if (kalemler.length === 0) {
+let urun = Object.keys(DB.stoklar).find(u => p.includes(u.toLowerCase())) || 'Domates';
+kalemler.push({ urun, birimTuru: DB.stoklar[urun]?.birim || 'kg', miktar: sayilar[0] || 10, birim: sayilar[1] || 15, toplam: (sayilar[0] || 10) * (sayilar[1] || 15), birimMaliyet: 0, kar: 0 });
+}
+hazirTopluIslemler.push({
+tip: 'Satis', cariId: cari ? cari.id : '', cariAd: cari ? cari.ad : '',
+cariTur: 'Musteri', kalemler, toplam: kalemler.reduce((a, k) => a + k.toplam, 0), odeme: 'Veresiye', aciklama: ''
+});
+return;
+}
+if (p.includes('al') || p.includes('alım') || p.includes('giriş')) {
+let cari = DB.cariler.find(c => c.tur === 'Tedarikci' && p.includes(c.ad.toLowerCase()));
+let kalemler = cumledenKalemleriAyikla(p);
+if (kalemler.length === 0) {
+let urun = Object.keys(DB.stoklar).find(u => p.includes(u.toLowerCase())) || 'Elma';
+kalemler.push({ urun, birimTuru: 'kg', miktar: sayilar[0] || 50, birim: sayilar[1] || 10, toplam: (sayilar[0] || 50) * (sayilar[1] || 10) });
+}
+hazirTopluIslemler.push({
+tip: 'Alis', cariId: cari ? cari.id : '', cariAd: cari ? cari.ad : '',
+cariTur: 'Tedarikci', kalemler, kasaAdet: 0, kasaFiyat: 0, kasaBedeli: 0, nakliye: 0,
+toplam: kalemler.reduce((a, k) => a + k.toplam, 0), odeme: 'Borc', aciklama: ''
+});
+return;
+}
+});
+
+if (hazirTopluIslemler.length === 0) {
+alert("Konuşulan cümleden geçerli bir işlem çıkarılamadı.");
+return;
+}
+
+let html = '';
+hazirTopluIslemler.forEach((islem, idx) => {
+let icerik = (islem.kalemler || []).map(k => `${k.urun} (${k.miktar} ${k.birimTuru || 'kg'} × ${k.birim}₺)`).join(', ');
+if (islem.tip === 'Gider') icerik = `Kategori: ${islem.kategori}`;
+
+let cariSeciciHtml = '';
+if (islem.tip !== 'Gider') {
+if (!islem.cariId) {
+const filtrelenmis = DB.cariler.filter(c => c.tur === islem.cariTur);
+cariSeciciHtml = `
+<div class="mt-1">
+<span class="text-rose-600 font-bold block text-[10px]">⚠️ Cari bulunamadı, lütfen seçin:</span>
+<select onchange="hazirTopluIslemler[${idx}].cariId=this.value; hazirTopluIslemler[${idx}].cariAd=this.options[this.selectedIndex].text;" class="border p-1 rounded text-xs bg-white text-slate-800 font-bold">
+<option value="">Cari Seçiniz...</option>
+${filtrelenmis.map(c => `<option value="${c.id}">${c.ad}</option>`).join('')}
+</select>
+</div>
+`;
+} else {
+cariSeciciHtml = `<span class="text-slate-700 font-bold ml-1">${islem.cariAd}</span>`;
+}
+}
+
+html += `
+<div class="p-2.5 bg-white rounded-xl border ${!islem.cariId && islem.tip !== 'Gider' ? 'border-rose-300 bg-rose-50/40' : 'border-emerald-200'} flex justify-between items-center text-xs">
+<div>
+<span class="font-bold text-slate-900">${idx + 1}. [${islem.tip.replace('_', ' ')}]</span>
+${cariSeciciHtml}
+<div class="text-slate-500 text-[11px] mt-0.5">${icerik}</div>
+</div>
+<span class="font-black text-emerald-800 text-sm ml-2">${islem.toplam.toFixed(2)} ₺</span>
+</div>
+`;
+});
+
+document.getElementById('ses-detaylar').innerHTML = html;
+document.getElementById('ses-islem-sayisi').innerText = `${hazirTopluIslemler.length} İşlem Hazırlandı`;
+document.getElementById('ses-onay-karti').classList.remove('hidden');
+}
+
+function sesliIslemiIptalEt() {
+hazirTopluIslemler = [];
+document.getElementById('ses-onay-karti').classList.add('hidden');
+}
+
+function topluSesliIslemleriKaydet() {
+if (hazirTopluIslemler.length === 0) return;
+
+const eksikCariVar = hazirTopluIslemler.some(i => i.tip !== 'Gider' && !i.cariId);
+if (eksikCariVar) {
+alert("Lütfen cari ismi eşleşmeyen işlemler için onay kartındaki listeden ilgili cariyi seçiniz!");
+return;
+}
+
+const tarih = tarihBirlestir(new Date().toISOString().split('T')[0]);
+
+hazirTopluIslemler.forEach(islem => {
+islem.tarih = tarih;
+islem.id = 'H_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+const cari = DB.cariler.find(c => c.id === islem.cariId);
+
+if (islem.tip === 'Satis') {
+islem.kalemler.forEach(k => {
+const item = DB.stoklar[k.urun] || { miktar: 0, maliyet: 0, birim: k.birimTuru || 'kg', kap: 0 };
+const bm = item.miktar > 0 ? (item.maliyet / item.miktar) : 0;
+item.miktar -= k.miktar;
+item.maliyet = Math.max(0, item.maliyet - (bm * k.miktar));
+k.birimMaliyet = bm;
+k.kar = k.toplam - (bm * k.miktar);
+islem.kar = (islem.kar || 0) + k.kar;
+});
+if (cari) cari.bakiye += islem.toplam;
+} else if (islem.tip === 'Alis') {
+islem.kalemler.forEach(k => {
+if (!DB.stoklar[k.urun]) DB.stoklar[k.urun] = { miktar: 0, maliyet: 0, birim: k.birimTuru || 'kg', kap: 0, kasaMiktar: 0 };
+DB.stoklar[k.urun].miktar += k.miktar;
+DB.stoklar[k.urun].maliyet += k.toplam;
+DB.stoklar[k.urun].birim = k.birimTuru || 'kg';
+});
+if (cari) cari.bakiye -= islem.toplam;
+} else if (islem.tip === 'Tahsilat' && cari) {
+cari.bakiye -= islem.toplam;
+} else if (islem.tip === 'Odeme' && cari) {
+cari.bakiye += islem.toplam;
+}
+
+DB.hareketler.unshift(islem);
+});
+
+save();
+sesliIslemiIptalEt();
+alert("Tüm işlemler başarıyla kaydedildi!");
+tab('ozet');
+}
+
+function sifirla3Asama() {
+if (!confirm("1. AŞAMA: Tüm verileri sıfırlamak istediğinize emin misiniz?")) return;
+if (!confirm("2. AŞAMA: Tüm muhasebe kayıtları silinecektir! Devam edilsin mi?")) return;
+const onay = prompt("3. AŞAMA: Onaylamak için 'SIFIRLA' yazın:");
+if (onay && onay.trim().toUpperCase() === 'SIFIRLA') {
+localStorage.removeItem(STORAGE_KEY);
+location.reload();
+}
+}
+
+function yedekIndir() {
+const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(DB, null, 2));
+const a = document.createElement('a');
+a.href = dataStr;
+a.download = `tuccar_plus_yedek_${new Date().toISOString().split('T')[0]}.json`;
+document.body.appendChild(a);
+a.click();
+a.remove();
+}
+
+function yedekYukle(event) {
+const file = event.target.files[0];
+if (!file) return;
+const reader = new FileReader();
+reader.onload = function(e) {
+try {
+const yuklenen = JSON.parse(e.target.result);
+if (yuklenen && yuklenen.cariler && yuklenen.stoklar && yuklenen.hareketler) {
+if (confirm("Bu yedek dosyası mevcut verilerin üzerine yazılacaktır. Onaylıyor musunuz?")) {
+DB = yuklenen;
+save();
+alert("Yedek yüklendi!");
+location.reload();
+}
+}
+} catch(err) { alert("Dosya okunamadı!"); }
+};
+reader.readAsText(file);
+event.target.value = '';
+}
+
+function tab(id) {
+document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
+document.querySelectorAll('.t-btn').forEach(btn => {
+btn.classList.remove('bg-amber-500', 'text-slate-950');
+btn.classList.add('bg-slate-800', 'text-slate-300');
+});
+const p = document.getElementById('p-' + id);
+const b = document.getElementById('b-' + id);
+if(p) p.classList.remove('hidden');
+if(b) {
+b.classList.remove('bg-slate-800', 'text-slate-300');
+b.classList.add('bg-amber-500', 'text-slate-950');
+}
+if(id === 'satis') satisUrunDropdownlariniGuncelle();
+if(id === 'rapor') { raporCariFiltrele(); raporOlustur(); }
+if(id === 'hareketler') renderHareketTablosu();
+if(id === 'cariler') renderCariTablosu();
+}
+
+// ================= SATIŞ EKRANI (KASA DÜŞÜŞÜ DENGELİ) =================
+function satisOdemeDegisti() {
+const val = document.getElementById('s-odeme').value;
+const kutu = document.getElementById('s-kismi-kutu');
+if (val === 'Kismi') {
+kutu.classList.remove('hidden');
+document.getElementById('s-pesinat').focus();
+} else {
+kutu.classList.add('hidden');
+document.getElementById('s-pesinat').value = '';
+}
+}
+
+function satisUrunDropdownlariniGuncelle() {
+document.querySelectorAll('.satis-row').forEach(row => {
+const sel = row.querySelector('.s-urun');
+if (!sel) return;
+const currentVal = sel.value;
+let optionsHtml = '<option value="">Ürün Seçiniz...</option>';
+const urunler = Object.keys(DB.stoklar);
+urunler.forEach(u => {
+const s = DB.stoklar[u];
+const b = s.birim || 'kg';
+const kasaDetay = s.kasaMiktar > 0 ? ` (${s.kasaMiktar} Kasa)` : '';
+optionsHtml += `<option value="${u}">${u} - ${s.miktar.toFixed(2)} ${b}${kasaDetay}</option>`;
+});
+sel.innerHTML = optionsHtml;
+if (currentVal && DB.stoklar[currentVal]) {
+sel.value = currentVal;
+}
+});
+}
+
+function satisSatiriEkle() {
+if (satisSayisi >= 30) { alert("En fazla 30 ürün ekleyebilirsiniz."); return; }
+satisSayisi++;
+document.getElementById('satis-sayac').innerText = satisSayisi;
+const id = 's_row_' + Date.now() + '_' + Math.random().toString(36).substr(2, 3);
+const div = document.createElement('div');
+div.id = id;
+div.className = "satis-row bg-white p-2.5 rounded-xl border border-slate-200 grid grid-cols-1 md:grid-cols-12 gap-2 items-center text-xs";
+div.innerHTML = `
+<div class="md:col-span-4">
+<select class="s-urun w-full border p-2 rounded-lg bg-slate-50 font-medium" required onchange="satisUrunDegisti('${id}')">
+<option value="">Ürün Seçiniz...</option>
+${Object.keys(DB.stoklar).map(u => {
+const s = DB.stoklar[u];
+const b = s.birim || 'kg';
+const kd = s.kasaMiktar > 0 ? ` (${s.kasaMiktar} Kasa)` : '';
+return `<option value="${u}">${u} - ${s.miktar.toFixed(2)} ${b}${kd}</option>`;
+}).join('')}
+</select>
+</div>
+<div class="md:col-span-3">
+<div class="relative">
+<input type="number" step="0.01" class="s-miktar w-full border p-2 rounded-lg pr-14" placeholder="Miktar" required oninput="hesaplaSatis()">
+<span class="s-birim-etiket absolute right-2.5 top-2.5 text-[11px] font-bold text-slate-400 uppercase">kg</span>
+</div>
+<span class="s-stok text-[10px] text-slate-400 block mt-0.5">Stok: 0.00</span>
+</div>
+<div class="md:col-span-3">
+<input type="number" step="0.01" class="s-fiyat w-full border p-2 rounded-lg" placeholder="Birim Fiyat (₺)" required oninput="hesaplaSatis()">
+<span class="s-golge text-[10px] text-indigo-600 block mt-0.5">Alış: 0.00 ₺</span>
+</div>
+<div class="md:col-span-2 flex justify-between items-center">
+<span class="s-toplam font-bold text-slate-800 text-xs">0.00 ₺</span>
+${satisSayisi > 1 ? `<button type="button" onclick="satisSatiriSil('${id}')" class="text-rose-500 ml-2 hover:text-rose-700"><i class="fa-solid fa-trash"></i></button>` : ''}
+</div>
+`;
+document.getElementById('satis-kalemleri').appendChild(div);
+}
+
+function satisSatiriSil(id) {
+const el = document.getElementById(id);
+if (el) { el.remove(); satisSayisi--; document.getElementById('satis-sayac').innerText = satisSayisi; hesaplaSatis(); }
+}
+
+function satisUrunDegisti(rowId) {
+const row = document.getElementById(rowId);
+if (!row) return;
+const u = row.querySelector('.s-urun').value;
+const golge = row.querySelector('.s-golge');
+const stok = row.querySelector('.s-stok');
+const etiket = row.querySelector('.s-birim-etiket');
+const miktarInput = row.querySelector('.s-miktar');
+
+if (u && DB.stoklar[u]) {
+const s = DB.stoklar[u];
+const bTuru = s.birim || 'kg';
+const kd = s.kasaMiktar > 0 ? ` (${s.kasaMiktar} Kasa)` : '';
+if (etiket) etiket.innerText = bTuru;
+if (miktarInput) miktarInput.placeholder = `Miktar (${bTuru})`;
+golge.innerText = `Alış: ${s.miktar > 0 ? (s.maliyet / s.miktar).toFixed(2) : '0.00'} ₺ / ${bTuru}`;
+stok.innerText = `Mevcut Stok: ${s.miktar.toFixed(2)} ${bTuru}${kd}`;
+} else {
+if (etiket) etiket.innerText = 'kg';
+if (miktarInput) miktarInput.placeholder = 'Miktar';
+golge.innerText = 'Alış: 0.00 ₺';
+stok.innerText = 'Stok: 0.00';
+}
+hesaplaSatis();
+}
+
+function hesaplaSatis() {
+let tot = 0;
+document.querySelectorAll('.satis-row').forEach(r => {
+const m = parseFloat(r.querySelector('.s-miktar').value) || 0;
+const f = parseFloat(r.querySelector('.s-fiyat').value) || 0;
+const t = m * f;
+r.querySelector('.s-toplam').innerText = t.toFixed(2) + ' ₺';
+tot += t;
+});
+document.getElementById('s-genel-toplam').innerText = tot.toFixed(2) + ' ₺';
+}
+
+function cokluSatisKaydet(e) {
+e.preventDefault();
+const cariId = document.getElementById('s-cari').value;
+const cari = DB.cariler.find(c => c.id === cariId);
+const tarih = tarihBirlestir(document.getElementById('s-tarih').value);
+const odeme = document.getElementById('s-odeme').value;
+const pesinat = parseFloat(document.getElementById('s-pesinat').value) || 0;
+const aciklama = document.getElementById('s-aciklama').value.trim();
+
+const kalemler = [];
+let toplamTutar = 0, toplamKar = 0;
+
+document.querySelectorAll('.satis-row').forEach(r => {
+const urun = r.querySelector('.s-urun').value;
+const miktar = parseFloat(r.querySelector('.s-miktar').value);
+const fiyat = parseFloat(r.querySelector('.s-fiyat').value);
+if (!urun || isNaN(miktar) || isNaN(fiyat)) return;
+
+const item = DB.stoklar[urun] || { miktar: 0, maliyet: 0, birim: 'kg', kap: 0, kasaMiktar: 0 };
+const birimTuru = item.birim || 'kg';
+const birimMaliyet = item.miktar > 0 ? (item.maliyet / item.miktar) : 0;
+const maliyetTutar = birimMaliyet * miktar;
+const lineTotal = miktar * fiyat;
+
+// Kasa orantı düşüşü (varsa) - İptal için kaydediyoruz
+let dusulenKasa = 0;
+if (item.kasaMiktar > 0 && item.miktar > 0) {
+dusulenKasa = Math.min(item.kasaMiktar, Math.round((miktar / item.miktar) * item.kasaMiktar));
+item.kasaMiktar -= dusulenKasa;
+}
+
+item.miktar -= miktar;
+item.maliyet = Math.max(0, item.maliyet - maliyetTutar);
+
+kalemler.push({
+urun, birimTuru, miktar, birim: fiyat, birimMaliyet,
+toplam: lineTotal, kar: (lineTotal - maliyetTutar),
+kasaDusulen: dusulenKasa
+});
+toplamTutar += lineTotal;
+toplamKar += (lineTotal - maliyetTutar);
+});
+
+if (kalemler.length === 0) { alert("Lütfen en az bir ürün girin!"); return; }
+
+if (cari) {
+if (odeme === 'Veresiye') cari.bakiye += toplamTutar;
+else if (odeme === 'Kismi') cari.bakiye += (toplamTutar - pesinat);
+}
+
+DB.hareketler.unshift({
+id: 'H_' + Date.now(), tip: 'Satis', tarih,
+cariId, cariAd: cari ? cari.ad : 'Müşteri',
+kalemler, toplam: toplamTutar, kar: toplamKar, odeme, pesinat, aciklama
+});
+
+save();
+document.getElementById('satis-kalemleri').innerHTML = '';
+satisSayisi = 0;
+satisSatiriEkle();
+document.getElementById('s-aciklama').value = '';
+document.getElementById('s-genel-toplam').innerText = '0.00 ₺';
+satisOdemeDegisti();
+alert("Satış faturası kaydedildi.");
+tab('ozet');
+}
+
+// ================= MAL ALIM (NAKLİYE MASRAFI DENGELİ) =================
+function alisSatiriEkle() {
+if (alisSayisi >= 30) { alert("En fazla 30 ürün ekleyebilirsiniz."); return; }
+alisSayisi++;
+document.getElementById('alis-sayac').innerText = alisSayisi;
+const id = 'a_row_' + Date.now() + '_' + Math.random().toString(36).substr(2, 3);
+const div = document.createElement('div');
+div.id = id;
+div.className = "alis-row bg-white p-2.5 rounded-xl border border-slate-200 grid grid-cols-1 md:grid-cols-12 gap-2 items-center text-xs";
+div.innerHTML = `
+<div class="md:col-span-3">
+<input type="text" list="urun-listesi" class="a-urun w-full border p-2 rounded-lg bg-slate-50 font-medium" placeholder="Ürün Adı" required onchange="alisUrunSecildi('${id}')">
+</div>
+<div class="md:col-span-2">
+<select class="a-birim w-full border p-2 rounded-lg bg-slate-50 font-bold text-slate-700">
+<option value="kg">Kg</option>
+<option value="adet">Adet</option>
+<option value="koli">Koli</option>
+</select>
+</div>
+<div class="md:col-span-2">
+<input type="number" step="0.01" class="a-miktar w-full border p-2 rounded-lg" placeholder="Miktar" required oninput="hesaplaAlis()">
+</div>
+<div class="md:col-span-2">
+<input type="number" class="a-kasa-sayisi w-full border p-2 rounded-lg bg-amber-50/50" placeholder="Kasa Sayısı (Ops.)">
+</div>
+<div class="md:col-span-2">
+<input type="number" step="0.01" class="a-fiyat w-full border p-2 rounded-lg" placeholder="Alış Fiyatı (₺)" required oninput="hesaplaAlis()">
+</div>
+<div class="md:col-span-1 flex justify-between items-center">
+<span class="a-toplam font-bold text-slate-800 text-[11px]">0 ₺</span>
+${alisSayisi > 1 ? `<button type="button" onclick="alisSatiriSil('${id}')" class="text-rose-500 ml-1 hover:text-rose-700"><i class="fa-solid fa-trash"></i></button>` : ''}
+</div>
+`;
+document.getElementById('alis-kalemleri').appendChild(div);
+}
+
+function alisUrunSecildi(rowId) {
+const row = document.getElementById(rowId);
+if (!row) return;
+const u = row.querySelector('.a-urun').value.trim();
+if (u && DB.stoklar[u] && DB.stoklar[u].birim) {
+row.querySelector('.a-birim').value = DB.stoklar[u].birim;
+}
+}
+
+function alisSatiriSil(id) {
+const el = document.getElementById(id);
+if (el) { el.remove(); alisSayisi--; document.getElementById('alis-sayac').innerText = alisSayisi; hesaplaAlis(); }
+}
+
+function hesaplaAlis() {
+let urunToplam = 0;
+document.querySelectorAll('.alis-row').forEach(r => {
+const m = parseFloat(r.querySelector('.a-miktar').value) || 0;
+const f = parseFloat(r.querySelector('.a-fiyat').value) || 0;
+const t = m * f;
+r.querySelector('.a-toplam').innerText = t.toFixed(2) + ' ₺';
+urunToplam += t;
+});
+
+const kAdet = parseFloat(document.getElementById('a-kasa-adet').value) || 0;
+const kFiyat = parseFloat(document.getElementById('a-kasa-fiyat').value) || 0;
+const kasaBedeli = kAdet * kFiyat;
+document.getElementById('a-kasa-toplam-goster').innerText = kasaBedeli.toFixed(2) + ' ₺';
+
+const nakliye = parseFloat(document.getElementById('a-nakliye').value) || 0;
+const genelToplam = urunToplam + kasaBedeli;
+
+document.getElementById('a-genel-toplam').innerText = genelToplam.toFixed(2) + ' ₺';
+const bilgi = document.getElementById('a-masraf-bilgi');
+if (nakliye > 0) {
+bilgi.innerText = `+ ${nakliye.toFixed(2)} ₺ Nakliye ürün maliyetlerine dağıtıldı.`;
+} else {
+bilgi.innerText = '';
+}
+}
+
+function cokluAlisKaydet(e) {
+e.preventDefault();
+const cariId = document.getElementById('a-cari').value;
+const cari = DB.cariler.find(c => c.id === cariId);
+const tarih = tarihBirlestir(document.getElementById('a-tarih').value);
+const odeme = document.getElementById('a-odeme').value;
+const aciklama = document.getElementById('a-aciklama').value.trim();
+
+const kasaAdet = parseInt(document.getElementById('a-kasa-adet').value) || 0;
+const kasaFiyat = parseFloat(document.getElementById('a-kasa-fiyat').value) || 0;
+const kasaBedeli = kasaAdet * kasaFiyat;
+const nakliye = parseFloat(document.getElementById('a-nakliye').value) || 0;
+
+const kalemler = [];
+let urunlerToplami = 0;
+
+document.querySelectorAll('.alis-row').forEach(r => {
+let urun = r.querySelector('.a-urun').value.trim();
+if (urun) {
+urun = urun.charAt(0).toUpperCase() + urun.slice(1);
+}
+const birimTuru = r.querySelector('.a-birim').value || 'kg';
+const miktar = parseFloat(r.querySelector('.a-miktar').value);
+const fiyat = parseFloat(r.querySelector('.a-fiyat').value);
+const kasaSayisi = parseInt(r.querySelector('.a-kasa-sayisi').value) || 0;
+
+if (!urun || isNaN(miktar) || isNaN(fiyat)) return;
+
+const lineTotal = miktar * fiyat;
+kalemler.push({ urun, birimTuru, miktar, kasaSayisi, birim: fiyat, toplam: lineTotal });
+urunlerToplami += lineTotal;
+});
+
+if (kalemler.length === 0) { alert("Lütfen en az bir ürün girin!"); return; }
+
+// NAKLİYE MASRAFI SADECE MALİYETE EKLENİR (NET KARDAN ÇİFT DÜŞME ENGELLENDİ)
+kalemler.forEach(k => {
+const nakliyePayi = urunlerToplami > 0 ? (k.toplam / urunlerToplami) * nakliye : 0;
+const netMaliyet = k.toplam + nakliyePayi;
+
+if (!DB.stoklar[k.urun]) {
+DB.stoklar[k.urun] = { miktar: 0, maliyet: 0, birim: k.birimTuru, kap: 0, kasaMiktar: 0 };
+}
+DB.stoklar[k.urun].miktar += k.miktar;
+DB.stoklar[k.urun].maliyet += netMaliyet;
+DB.stoklar[k.urun].kasaMiktar = (DB.stoklar[k.urun].kasaMiktar || 0) + k.kasaSayisi;
+DB.stoklar[k.urun].birim = k.birimTuru;
+});
+
+const genelToplam = urunlerToplami + kasaBedeli;
+
+if (cari) {
+if (odeme === 'Borc') cari.bakiye -= genelToplam;
+}
+
+DB.hareketler.unshift({
+id: 'H_' + Date.now(), tip: 'Alis', tarih,
+cariId, cariAd: cari ? cari.ad : 'Müstahsil',
+kalemler, kasaAdet, kasaFiyat, kasaBedeli, nakliye,
+toplam: genelToplam, odeme, aciklama
+});
+
+save();
+document.getElementById('alis-kalemleri').innerHTML = '';
+alisSayisi = 0;
+alisSatiriEkle();
+document.getElementById('a-nakliye').value = '';
+document.getElementById('a-kasa-adet').value = '';
+document.getElementById('a-kasa-fiyat').value = '';
+document.getElementById('a-kasa-toplam-goster').innerText = '0.00 ₺';
+document.getElementById('a-aciklama').value = '';
+document.getElementById('a-genel-toplam').innerText = '0.00 ₺';
+document.getElementById('a-masraf-bilgi').innerText = '';
+alert("Mal alımı ve nakliye maliyeti kaydedildi.");
+tab('stok');
+}
+
+// ================= CARİ DÜZENLEME =================
+function cariDuzenleModalAc(cid) {
+const c = DB.cariler.find(x => x.id === cid);
+if (!c) return;
+document.getElementById('cd-id').value = c.id;
+document.getElementById('cd-ad').value = c.ad;
+document.getElementById('cd-tel').value = c.tel || '';
+document.getElementById('cd-tur').value = c.tur;
+document.getElementById('modal-cari-duzenle').classList.remove('hidden');
+}
+
+function kapatCariDuzenleModal() {
+document.getElementById('modal-cari-duzenle').classList.add('hidden');
+}
+
+function kaydetCariDuzenle(e) {
+e.preventDefault();
+const id = document.getElementById('cd-id').value;
+const c = DB.cariler.find(x => x.id === id);
+if (!c) return;
+
+const yeniAd = document.getElementById('cd-ad').value.trim();
+const yeniTel = document.getElementById('cd-tel').value.trim();
+const yeniTur = document.getElementById('cd-tur').value;
+
+c.ad = yeniAd;
+c.tel = yeniTel;
+c.tur = yeniTur;
+
+DB.hareketler.forEach(h => {
+if (h.cariId === id) h.cariAd = yeniAd;
+});
+
+save();
+kapatCariDuzenleModal();
+alert("Cari bilgileri başarıyla güncellendi.");
+}
+
+// ================= DEPO YÖNETİMİ =================
+function urunDuzenle(eskiAd) {
+const yeni = prompt(`'${eskiAd}' ürününün yeni adını girin:`, eskiAd);
+if (!yeni || !yeni.trim() || yeni.trim() === eskiAd) return;
+const yeniAd = yeni.trim().charAt(0).toUpperCase() + yeni.trim().slice(1);
+if (DB.stoklar[yeniAd] && yeniAd !== eskiAd) {
+if (!confirm(`'${yeniAd}' adında zaten bir ürün var. Stokları birleştirmek istiyor musunuz?`)) return;
+DB.stoklar[yeniAd].miktar += DB.stoklar[eskiAd].miktar;
+DB.stoklar[yeniAd].maliyet += DB.stoklar[eskiAd].maliyet;
+DB.stoklar[yeniAd].kasaMiktar = (DB.stoklar[yeniAd].kasaMiktar || 0) + (DB.stoklar[eskiAd].kasaMiktar || 0);
+} else {
+DB.stoklar[yeniAd] = DB.stoklar[eskiAd];
+}
+delete DB.stoklar[eskiAd];
+
+DB.hareketler.forEach(h => {
+if (h.kalemler) {
+h.kalemler.forEach(k => {
+if (k.urun === eskiAd) k.urun = yeniAd;
+});
+}
+});
+save();
+alert(`'${eskiAd}' ürünü '${yeniAd}' olarak güncellendi.`);
+}
+
+function urunStoktanSil(urunAd) {
+const s = DB.stoklar[urunAd];
+if (!s) return;
+if (confirm(`'${urunAd}' ürününü depodan silmek istediğinize emin misiniz?`)) {
+delete DB.stoklar[urunAd];
+save();
+alert(`'${urunAd}' depodan silindi.`);
+}
+}
+
+// ================= MANUEL BORÇ / ALACAK MODALI =================
+function manuelIslemModalAc(onSeciliCariId, onSeciliTur) {
+if (onSeciliTur) document.getElementById('mi-grup').value = onSeciliTur;
+manuelIslemCariYukle(onSeciliCariId);
+document.getElementById('mi-tutar').value = '';
+document.getElementById('mi-aciklama').value = '';
+document.getElementById('modal-borc').classList.remove('hidden');
+}
+
+function kapatBorcModal() {
+document.getElementById('modal-borc').classList.add('hidden');
+}
+
+function manuelIslemCariYukle(seciliId) {
+const grup = document.getElementById('mi-grup').value;
+const sel = document.getElementById('mi-cari');
+sel.innerHTML = '<option value="">Cari Seçiniz...</option>';
+DB.cariler.filter(c => c.tur === grup).forEach(c => {
+sel.innerHTML += `<option value="${c.id}">${c.ad}</option>`;
+});
+if (seciliId) sel.value = seciliId;
+}
+
+function kaydetManuelIslem(e) {
+e.preventDefault();
+const cariId = document.getElementById('mi-cari').value;
+const cari = DB.cariler.find(c => c.id === cariId);
+const yon = document.getElementById('mi-yon').value;
+const tutar = parseFloat(document.getElementById('mi-tutar').value);
+const tarih = tarihBirlestir(document.getElementById('mi-tarih').value);
+const aciklama = document.getElementById('mi-aciklama').value.trim();
+
+if (!cari || isNaN(tutar) || tutar <= 0) { alert("Geçerli cari ve tutar giriniz!"); return; }
+
+if (cari.tur === 'Musteri') {
+if (yon === 'Borc') cari.bakiye += tutar;
+else cari.bakiye -= tutar;
+} else {
+if (yon === 'Borc') cari.bakiye += tutar;
+else cari.bakiye -= tutar;
+}
+
+DB.hareketler.unshift({
+id: 'H_' + Date.now(), tip: 'Manuel_Islem', altTip: yon, tarih,
+cariId, cariAd: cari.ad, toplam: tutar, aciklama
+});
+
+save();
+kapatBorcModal();
+alert(`Manuel ${yon} işlemi başarıyla kaydedildi.`);
+}
+
+function yeniGiderKategorisiEkle() {
+const yeni = prompt("Yeni Gider/Masraf Adı:");
+if (yeni && yeni.trim() && !DB.giderKategorileri.includes(yeni.trim())) {
+DB.giderKategorileri.push(yeni.trim());
+save();
+}
+}
+
+function giderKaydet(e) {
+e.preventDefault();
+const kategori = document.getElementById('g-kategori').value;
+const tutar = parseFloat(document.getElementById('g-tutar').value);
+const tarih = tarihBirlestir(document.getElementById('g-tarih').value);
+const aciklama = document.getElementById('g-aciklama').value.trim();
+
+if (isNaN(tutar) || tutar <= 0) return;
+
+DB.hareketler.unshift({ id: 'H_' + Date.now(), tip: 'Gider', tarih, kategori, toplam: tutar, aciklama });
+save();
+document.getElementById('g-tutar').value = '';
+document.getElementById('g-aciklama').value = '';
+alert("Masraf işlendi.");
+tab('ozet');
+}
+
+// ================= ROLLBACK & İŞLEM SİLME / DÜZENLEME =================
+function geriAlHareket(h) {
+const cari = DB.cariler.find(c => c.id === h.cariId);
+if (h.tip === 'Alis') {
+if (h.kalemler) {
+h.kalemler.forEach(k => {
+if (DB.stoklar[k.urun]) {
+DB.stoklar[k.urun].miktar = Math.max(0, DB.stoklar[k.urun].miktar - k.miktar);
+DB.stoklar[k.urun].maliyet = Math.max(0, DB.stoklar[k.urun].maliyet - k.toplam);
+if (k.kasaSayisi) DB.stoklar[k.urun].kasaMiktar = Math.max(0, (DB.stoklar[k.urun].kasaMiktar || 0) - k.kasaSayisi);
+}
+});
+}
+if (cari && h.odeme === 'Borc') cari.bakiye += h.toplam;
+} else if (h.tip === 'Satis') {
+if (h.kalemler) {
+h.kalemler.forEach(k => {
+if (!DB.stoklar[k.urun]) DB.stoklar[k.urun] = { miktar: 0, maliyet: 0, birim: k.birimTuru || 'kg', kap: 0, kasaMiktar: 0 };
+DB.stoklar[k.urun].miktar += k.miktar;
+DB.stoklar[k.urun].maliyet += (k.miktar * (k.birimMaliyet || 0));
+// İptal edilen satışın kasasını geri iade et
+if (k.kasaDusulen) {
+DB.stoklar[k.urun].kasaMiktar = (DB.stoklar[k.urun].kasaMiktar || 0) + k.kasaDusulen;
+}
+});
+}
+if (cari) {
+if (h.odeme === 'Veresiye') cari.bakiye -= h.toplam;
+else if (h.odeme === 'Kismi') cari.bakiye -= (h.toplam - (h.pesinat || 0));
+}
+} else if (h.tip === 'Tahsilat' && cari) {
+cari.bakiye += h.toplam;
+} else if (h.tip === 'Odeme' && cari) {
+cari.bakiye -= h.toplam;
+} else if (h.tip === 'Manuel_Islem' && cari) {
+cari.bakiye -= (h.altTip === 'Borc' ? h.toplam : -h.toplam);
+} else if (h.tip === 'Fire') {
+// Fire iptal edilirse stoğu ve maliyeti geri yükle
+if (DB.stoklar[h.urun]) {
+DB.stoklar[h.urun].miktar += h.miktar;
+DB.stoklar[h.urun].maliyet += h.toplam;
+if (h.kasaMiktar) DB.stoklar[h.urun].kasaMiktar = (DB.stoklar[h.urun].kasaMiktar || 0) + h.kasaMiktar;
+}
+}
+}
+
+function hareketSil(id) {
+const h = DB.hareketler.find(x => x.id === id);
+if (!h) return;
+if (confirm('UYARI: Bu işlem kaydını silmek stok ve bakiyeleri otomatik geri alacaktır. Emin misiniz?')) {
+geriAlHareket(h);
+DB.hareketler = DB.hareketler.filter(x => x.id !== id);
+save();
+alert('Kayıt silindi.');
+}
+}
+
+function hareketDuzenle(id) {
+const h = DB.hareketler.find(x => x.id === id);
+if (!h) return;
+
+if (h.tip === 'Tahsilat' || h.tip === 'Odeme' || h.tip === 'Manuel_Islem') {
+const tutar = prompt(`Yeni Tutar (₺):`, h.toplam);
+if (tutar === null) return;
+const ack = prompt(`Yeni Açıklama:`, h.aciklama || '');
+
+if (confirm('Kayıt güncellensin mi?')) {
+geriAlHareket(h);
+h.toplam = parseFloat(tutar) || 0;
+h.aciklama = ack;
+
+const cari = DB.cariler.find(c => c.id === h.cariId);
+if (cari) {
+if (h.tip === 'Tahsilat') { cari.bakiye -= h.toplam; }
+else if (h.tip === 'Odeme') { cari.bakiye += h.toplam; }
+else if (h.tip === 'Manuel_Islem') {
+cari.bakiye += (h.altTip === 'Borc' ? h.toplam : -h.toplam);
+}
+}
+save();
+alert('Güncellendi.');
+}
+} else if (h.tip === 'Gider') {
+const tutar = prompt(`Yeni Gider Tutarı (₺):`, h.toplam);
+if (tutar === null) return;
+const ack = prompt(`Yeni Açıklama:`, h.aciklama || '');
+h.toplam = parseFloat(tutar) || 0;
+h.aciklama = ack;
+save();
+alert('Masraf güncellendi.');
+} else if (h.tip === 'Satis') {
+if (!confirm("Satış faturası düzenleme moduna yüklenecektir. Eski kayıt geri alınacaktır. Onaylıyor musunuz?")) return;
+geriAlHareket(h);
+DB.hareketler = DB.hareketler.filter(x => x.id !== id);
+
+document.getElementById('s-cari').value = h.cariId;
+document.getElementById('s-tarih').value = h.tarih.split('T')[0];
+document.getElementById('s-odeme').value = h.odeme || 'Veresiye';
+document.getElementById('s-aciklama').value = h.aciklama || '';
+satisOdemeDegisti();
+if (h.odeme === 'Kismi') document.getElementById('s-pesinat').value = h.pesinat || '';
+
+document.getElementById('satis-kalemleri').innerHTML = '';
+satisSayisi = 0;
+(h.kalemler || []).forEach(k => {
+satisSatiriEkle();
+const rows = document.querySelectorAll('.satis-row');
+const lastRow = rows[rows.length - 1];
+lastRow.querySelector('.s-urun').value = k.urun;
+lastRow.querySelector('.s-miktar').value = k.miktar;
+lastRow.querySelector('.s-fiyat').value = k.birim;
+if (lastRow.querySelector('.s-birim-etiket')) {
+lastRow.querySelector('.s-birim-etiket').innerText = k.birimTuru || 'kg';
+}
+});
+hesaplaSatis();
+save();
+tab('satis');
+} else if (h.tip === 'Alis') {
+if (!confirm("Alım fişi düzenleme moduna yüklenecektir. Eski kayıt geri alınacaktır. Onaylıyor musunuz?")) return;
+geriAlHareket(h);
+DB.hareketler = DB.hareketler.filter(x => x.id !== id);
+
+document.getElementById('a-cari').value = h.cariId;
+document.getElementById('a-tarih').value = h.tarih.split('T')[0];
+document.getElementById('a-kasa-adet').value = h.kasaAdet || '';
+document.getElementById('a-kasa-fiyat').value = h.kasaFiyat || '';
+document.getElementById('a-nakliye').value = h.nakliye || '';
+document.getElementById('a-odeme').value = h.odeme || 'Borc';
+document.getElementById('a-aciklama').value = h.aciklama || '';
+
+document.getElementById('alis-kalemleri').innerHTML = '';
+alisSayisi = 0;
+(h.kalemler || []).forEach(k => {
+alisSatiriEkle();
+const rows = document.querySelectorAll('.alis-row');
+const lastRow = rows[rows.length - 1];
+lastRow.querySelector('.a-urun').value = k.urun;
+lastRow.querySelector('.a-birim').value = k.birimTuru || 'kg';
+lastRow.querySelector('.a-miktar').value = k.miktar;
+lastRow.querySelector('.a-kasa-sayisi').value = k.kasaSayisi || '';
+lastRow.querySelector('.a-fiyat').value = k.birim;
+});
+hesaplaAlis();
+save();
+tab('alis');
+}
+}
+
+// ================= CARİ DEFTERİ (HIZLI BAKİYE BUTONLU) =================
+function cariTurFiltrele(tur) {
+aktifCariTuru = tur;
+document.querySelectorAll('.cari-sub-btn').forEach(b => {
+b.classList.remove('bg-amber-600', 'text-white');
+b.classList.add('bg-slate-100', 'text-slate-600');
+});
+const b = document.getElementById(tur === 'Musteri' ? 'btn-cari-musteri' : 'btn-cari-tedarikci');
+if (b) { b.classList.remove('bg-slate-100', 'text-slate-600'); b.classList.add('bg-amber-600', 'text-white'); }
+renderCariTablosu();
+}
+
+function renderCariTablosu() {
+const tbody = document.getElementById('cari-tablosu');
+const thead = document.getElementById('cari-tablo-baslik');
+if (!tbody) return;
+const ara = (document.getElementById('ara-cari')?.value || '').toLowerCase().trim();
+
+let liste = DB.cariler.filter(c => c.tur === aktifCariTuru);
+if (ara) liste = liste.filter(c => c.ad.toLowerCase().includes(ara) || (c.tel && c.tel.includes(ara)));
+
+const isMusteri = aktifCariTuru === 'Musteri';
+if (thead) {
+thead.innerHTML = `<tr>
+<th class="p-2.5">Cari Adı</th>
+<th class="p-2.5">Tür</th>
+<th class="p-2.5">Telefon</th>
+<th class="p-2.5">Net Bakiye</th>
+<th class="p-2.5 text-right">İşlemler</th>
+</tr>`;
+}
+
+if (liste.length === 0) {
+tbody.innerHTML = `<tr><td colspan="5" class="p-3 text-slate-400 text-center">Cari bulunamadı.</td></tr>`;
+return;
+}
+
+let html = '';
+liste.forEach(c => {
+html += `<tr>
+<td class="p-2.5 font-bold text-slate-800">${c.ad}</td>
+<td class="p-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${c.tur === 'Musteri' ? 'bg-amber-100 text-amber-800' : 'bg-sky-100 text-sky-800'}">${c.tur === 'Musteri' ? 'Müşteri' : 'Müstahsil'}</span></td>
+<td class="p-2.5 text-slate-500">${c.tel || '-'}</td>
+<td class="p-2.5 font-bold ${c.bakiye > 0 ? 'text-amber-600' : (c.bakiye < 0 ? 'text-rose-600' : 'text-slate-600')}">${c.bakiye.toFixed(2)} ₺</td>
+<td class="p-2.5 text-right space-x-1 whitespace-nowrap">
+${c.tel ? `<button onclick="whatsappBakiyeGonder('${c.id}')" title="WhatsApp Bakiye Bildirimi" class="text-emerald-600 font-bold hover:text-emerald-700"><i class="fa-brands fa-whatsapp text-base"></i></button>` : ''}
+<button onclick="manuelIslemModalAc('${c.id}', '${c.tur}')" class="text-indigo-600 font-bold hover:underline" title="Manuel Bakiye Ekle/Düş">+/- Bakiye</button>
+<button onclick="cariDuzenleModalAc('${c.id}')" class="text-amber-600 font-bold hover:underline">Düzenle</button>
+<button onclick="cariEkstreGoster('${c.id}', '${c.tur}')" class="text-slate-600 font-bold hover:underline">Ekstre</button>
+<button onclick="tekCariSil('${c.id}')" class="text-rose-500 font-bold ml-1 hover:underline">Sil</button>
+</td>
+</tr>`;
+});
+tbody.innerHTML = html;
+}
+
+function hizliCariEkle(onTanimliTur) {
+const ad = prompt('Cari Adı / Firma:');
+if (!ad) return;
+const tel = prompt('Telefon Numarası (WhatsApp için opsiyonel, örn: 05XXXXXXXXX):') || '';
+const tur = onTanimliTur || (confirm('Bu cari bir MÜŞTERİ mi?') ? 'Musteri' : 'Tedarikci');
+DB.cariler.push({ id: 'C_' + Date.now(), ad, tur, tel, bakiye: 0, kap: 0 });
+save();
+}
+
+function tekCariSil(id) {
+if (confirm('Bu cariyi silmek istediğinize emin misiniz?')) {
+DB.cariler = DB.cariler.filter(c => c.id !== id);
+save();
+}
+}
+
+// ================= İŞLEM GEÇMİŞİ =================
+function renderHareketTablosu() {
+const tbody = document.getElementById('hareket-tablosu');
+if (!tbody) return;
+const ara = (document.getElementById('ara-hareket')?.value || '').toLowerCase().trim();
+
+let liste = DB.hareketler;
+if (ara) {
+liste = liste.filter(h => {
+return (h.cariAd && h.cariAd.toLowerCase().includes(ara)) ||
+(h.kategori && h.kategori.toLowerCase().includes(ara)) ||
+(h.aciklama && h.aciklama.toLowerCase().includes(ara)) ||
+(h.kalemler && h.kalemler.some(k => k.urun.toLowerCase().includes(ara)));
+});
+}
+
+if (liste.length === 0) {
+tbody.innerHTML = '<tr><td colspan="7" class="p-3 text-slate-400 text-center">Kayıt yok.</td></tr>';
+return;
+}
+
+let html = '';
+liste.forEach(h => {
+let detay = '-';
+if (h.kalemler && h.kalemler.length > 0) {
+detay = h.kalemler.map(k => {
+const kd = k.kasaSayisi > 0 ? ` [${k.kasaSayisi} Kasa]` : '';
+return `${k.urun} (${k.miktar} ${k.birimTuru || 'kg'}${kd} × ${k.birim}₺)`;
+}).join(', ');
+}
+if (h.kasaBedeli > 0) {
+detay += ` + Kasa Bedeli: ${h.kasaBedeli.toFixed(2)}₺`;
+}
+if (h.nakliye > 0) {
+detay += ` + Nakliye: ${h.nakliye.toFixed(2)}₺`;
+}
+if (h.tip === 'Fire') {
+detay = `${h.urun}: ${h.miktar} ${h.birim} (${h.kasaMiktar || 0} Kasa) Fire Düşüldü`;
+}
+
+let rozet = 'bg-slate-100 text-slate-800';
+let muhatap = h.cariAd || h.kategori || 'Kasa';
+if (h.tip === 'Satis') rozet = 'bg-emerald-100 text-emerald-800';
+else if (h.tip === 'Alis') rozet = 'bg-sky-100 text-sky-800';
+else if (h.tip === 'Tahsilat') rozet = 'bg-teal-100 text-teal-800';
+else if (h.tip === 'Odeme') rozet = 'bg-rose-100 text-rose-800';
+else if (h.tip === 'Manuel_Islem') rozet = 'bg-indigo-100 text-indigo-800';
+else if (h.tip === 'Gider') rozet = 'bg-purple-100 text-purple-800';
+else if (h.tip === 'Fire') rozet = 'bg-rose-200 text-rose-900';
+
+const isGiris = h.tip === 'Tahsilat' || h.tip === 'Satis';
+html += `<tr>
+<td class="p-2.5 text-slate-500">${h.tarih.split('T')[0]}</td>
+<td class="p-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${rozet}">${h.tip.replace('_', ' ')}</span></td>
+<td class="p-2.5 font-bold text-slate-800">${muhatap}</td>
+<td class="p-2.5 text-slate-600 max-w-xs truncate">${detay}</td>
+<td class="p-2.5 text-slate-500 italic max-w-xs truncate">${h.aciklama || '-'}</td>
+<td class="p-2.5 font-bold ${isGiris ? 'text-emerald-700' : 'text-slate-800'}">${h.toplam.toFixed(2)} ₺</td>
+<td class="p-2.5 text-right space-x-1 whitespace-nowrap">
+<button onclick="hareketDuzenle('${h.id}')" class="text-indigo-600 font-bold hover:underline">Düzenle</button>
+<button onclick="hareketSil('${h.id}')" class="text-rose-500 font-bold ml-2 hover:underline">Sil</button>
+</td>
+</tr>`;
+});
+tbody.innerHTML = html;
+}
+
+// ================= RAPORLAR & RENKLİ ÇIKTI & FİRE RAPORU =================
+function raporTuruDegisti() {
+const tur = document.getElementById('r-tur').value;
+document.getElementById('r-kutu-cari').classList.toggle('hidden', tur !== 'tek-cari');
+document.getElementById('r-kutu-coklu-urun').classList.toggle('hidden', tur !== 'urun-ozet');
+document.getElementById('btn-wa-ekstre').classList.toggle('hidden', tur !== 'tek-cari');
+if (tur === 'urun-ozet') renderUrunCheckboxlari();
+raporOlustur();
+}
+
+function raporCariTurDegis(tur) {
+raporAktifCariTuru = tur;
+const bM = document.getElementById('r-btn-musteri');
+const bT = document.getElementById('r-btn-tedarikci');
+if (tur === 'Musteri') {
+bM.className = 'font-bold px-1.5 py-0.5 rounded bg-amber-600 text-white';
+bT.className = 'font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-700';
+} else {
+bT.className = 'font-bold px-1.5 py-0.5 rounded bg-sky-600 text-white';
+bM.className = 'font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-700';
+}
+raporCariFiltrele();
+}
+
+function raporCariFiltrele() {
+const sel = document.getElementById('r-cari');
+if (!sel) return;
+const ara = (document.getElementById('r-cari-arama')?.value || '').toLowerCase().trim();
+let cariler = DB.cariler.filter(c => c.tur === raporAktifCariTuru);
+if (ara) cariler = cariler.filter(c => c.ad.toLowerCase().includes(ara));
+
+sel.innerHTML = cariler.map(c => `<option value="${c.id}">${c.ad}</option>`).join('');
+raporOlustur();
+}
+
+function renderUrunCheckboxlari() {
+const wrap = document.getElementById('r-urun-checkbox-kapsayici');
+const keys = Object.keys(DB.stoklar);
+if (keys.length === 0) {
+wrap.innerHTML = '<span class="text-slate-400 text-xs italic">Kayıtlı ürün bulunamadı.</span>';
+return;
+}
+wrap.innerHTML = keys.map(u => `
+<label class="inline-flex items-center space-x-1.5 bg-white border border-slate-200 px-2.5 py-1 rounded-lg text-xs cursor-pointer hover:bg-slate-50 font-medium">
+<input type="checkbox" value="${u}" class="r-urun-cb rounded text-indigo-600" checked onchange="raporOlustur()">
+<span>${u}</span>
+</label>
+`).join('');
+}
+
+function urunSeciminiAyarla(secimDurumu) {
+document.querySelectorAll('.r-urun-cb').forEach(cb => cb.checked = secimDurumu);
+raporOlustur();
+}
+
+function raporOlustur() {
+const tur = document.getElementById('r-tur').value;
+const bas = document.getElementById('r-bas').value;
+const bit = document.getElementById('r-bit').value;
+const box = document.getElementById('r-sonuc');
+
+if (tur === 'tek-cari') {
+const cid = document.getElementById('r-cari').value;
+const cari = DB.cariler.find(c => c.id === cid);
+document.getElementById('r-baslik-ana').innerText = "CARİ HESAP EKSTRESİ";
+if (!cari) { box.innerHTML = '<p class="text-slate-400 py-4 text-center">Lütfen bir cari seçin.</p>'; return; }
+document.getElementById('r-bilgi').innerText = `${cari.ad} [${cari.tur === 'Musteri' ? 'Müşteri' : 'Müstahsil'}] | Tel: ${cari.tel || 'Kayıtlı Değil'}`;
+
+let liste = DB.hareketler.filter(h => h.cariId === cid && (!bas || h.tarih >= bas) && (!bit || h.tarih <= bit + 'T23:59:59')).reverse();
+
+let html = `<table class="w-full text-left border"><thead class="bg-slate-100"><tr>
+<th class="p-1.5">Tarih</th><th class="p-1.5">İşlem</th><th class="p-1.5">Tüm Kalemler & Detaylar (Renkli)</th><th class="p-1.5">Not</th>
+<th class="p-1.5 text-right">Borç</th><th class="p-1.5 text-right">Alacak</th><th class="p-1.5 text-right">Bakiye</th>
+</tr></thead><tbody class="divide-y">`;
+
+let bakiye = 0;
+liste.forEach(h => {
+let borc = 0, alacak = 0;
+let detayHtml = '';
+
+if (h.tip === 'Satis' && h.kalemler) {
+detayHtml = h.kalemler.map(k => `
+<div class="my-0.5">
+<span class="inline-block bg-emerald-100 text-emerald-900 font-black px-1.5 py-0.5 rounded text-[11px]">${k.urun}</span>
+<span class="font-bold text-slate-700 ml-1">${k.miktar} ${k.birimTuru || 'kg'}</span> ×
+<span>${k.birim.toFixed(2)} ₺</span> =
+<span class="font-black text-emerald-800">${k.toplam.toFixed(2)} ₺</span>
+</div>`).join('');
+if (h.odeme === 'Veresiye') {
+borc = h.toplam;
+detayHtml += `<div class="text-[10px] text-slate-500 font-bold mt-0.5">[Açık Hesap]</div>`;
+} else if (h.odeme === 'Kismi') {
+borc = h.toplam; alacak = (h.pesinat || 0);
+detayHtml += `<div class="text-[10px] text-indigo-700 font-bold mt-0.5">[Kısmi: Tahsil: ${alacak.toFixed(2)} ₺ | Kalan: ${(borc - alacak).toFixed(2)} ₺]</div>`;
+} else {
+detayHtml += `<div class="text-[10px] text-emerald-700 font-bold mt-0.5">[Peşin Ödendi: ${h.toplam.toFixed(2)} ₺]</div>`;
+}
+} else if (h.tip === 'Alis' && h.kalemler) {
+detayHtml = h.kalemler.map(k => `
+<div class="my-0.5">
+<span class="inline-block bg-sky-100 text-sky-900 font-black px-1.5 py-0.5 rounded text-[11px]">${k.urun}</span>
+<span class="font-bold text-slate-700 ml-1">${k.miktar} ${k.birimTuru || 'kg'}</span> ×
+<span>${k.birim.toFixed(2)} ₺</span> =
+<span class="font-black text-sky-800">${k.toplam.toFixed(2)} ₺</span>
+</div>`).join('');
+if (h.kasaBedeli > 0) {
+detayHtml += `<div class="text-[10px] text-amber-800 font-bold mt-0.5">+ Kasa Bedeli: ${h.kasaAdet} Adet × ${h.kasaFiyat.toFixed(2)} ₺ = ${h.kasaBedeli.toFixed(2)} ₺</div>`;
+}
+if (h.odeme === 'Borc') {
+alacak = h.toplam;
+detayHtml += `<div class="text-[10px] text-slate-500 font-bold mt-0.5">[Açık Hesap Borç]</div>`;
+} else {
+detayHtml += `<div class="text-[10px] text-emerald-700 font-bold mt-0.5">[Nakit/Banka Ödendi]</div>`;
+}
+} else if (h.tip === 'Tahsilat') {
+alacak = h.toplam;
+detayHtml = `<span class="font-bold text-emerald-700">Tahsilat Alındı</span>`;
+} else if (h.tip === 'Odeme') {
+borc = h.toplam;
+detayHtml = `<span class="font-bold text-rose-700">Ödeme Yapıldı</span>`;
+} else if (h.tip === 'Manuel_Islem') {
+if (h.altTip === 'Borc') borc = h.toplam;
+else alacak = h.toplam;
+detayHtml = `<span class="font-bold text-indigo-700">Manuel ${h.altTip}</span>`;
+}
+
+bakiye += (borc - alacak);
+html += `<tr>
+<td class="p-1.5 align-top">${h.tarih.split('T')[0]}</td>
+<td class="p-1.5 align-top font-bold">${h.tip.replace('_', ' ')}</td>
+<td class="p-1.5 align-top">${detayHtml}</td>
+<td class="p-1.5 align-top text-slate-500 italic">${h.aciklama || '-'}</td>
+<td class="p-1.5 align-top text-right font-medium">${borc > 0 ? borc.toFixed(2) + ' ₺' : '-'}</td>
+<td class="p-1.5 align-top text-right font-medium">${alacak > 0 ? alacak.toFixed(2) + ' ₺' : '-'}</td>
+<td class="p-1.5 align-top text-right font-bold ${bakiye > 0 ? 'text-amber-600' : 'text-slate-800'}">${bakiye.toFixed(2)} ₺</td>
+</tr>`;
+});
+
+html += `</tbody><tfoot class="bg-slate-50 font-bold border-t"><tr>
+<td colspan="6" class="p-2 text-right">GÜNCEL NET BAKİYE:</td>
+<td class="p-2 text-right text-emerald-700 text-sm">${cari.bakiye.toFixed(2)} ₺</td>
+</tr></tfoot></table>`;
+box.innerHTML = html;
+
+} else if (tur === 'musteri-islemleri') {
+document.getElementById('r-baslik-ana').innerText = "TÜM MÜŞTERİ İŞLEMLERİ RAPORU";
+document.getElementById('r-bilgi').innerText = `Tarih: ${bas || 'İlk'} / ${bit || 'Bugün'}`;
+
+let liste = DB.hareketler.filter(h => (h.tip === 'Satis' || h.tip === 'Tahsilat' || h.tip === 'Manuel_Islem') && (!bas || h.tarih >= bas) && (!bit || h.tarih <= bit + 'T23:59:59'));
+let html = `<table class="w-full text-left border"><thead class="bg-slate-100"><tr>
+<th class="p-2">Tarih</th><th class="p-2">Müşteri</th><th class="p-2">İşlem</th><th class="p-2">Detay</th><th class="p-2">Açıklama</th><th class="p-2 text-right">Tutar</th>
+</tr></thead><tbody class="divide-y">`;
+
+let tot = 0;
+liste.forEach(h => {
+tot += h.toplam;
+let detay = (h.kalemler || []).map(k => `<span class="inline-block bg-emerald-50 text-emerald-800 px-1 py-0.5 rounded font-bold">${k.urun} (${k.miktar} ${k.birimTuru || 'kg'})</span>`).join(' ');
+html += `<tr>
+<td class="p-2">${h.tarih.split('T')[0]}</td>
+<td class="p-2 font-bold">${h.cariAd}</td>
+<td class="p-2">${h.tip}</td>
+<td class="p-2">${detay || '-'}</td>
+<td class="p-2 text-slate-500 italic">${h.aciklama || '-'}</td>
+<td class="p-2 text-right font-bold text-emerald-700">${h.toplam.toFixed(2)} ₺</td>
+</tr>`;
+});
+html += `</tbody><tfoot class="bg-slate-50 font-bold border-t"><tr>
+<td colspan="5" class="p-2 text-right">TOPLAM TUTAR:</td>
+<td class="p-2 text-right text-emerald-700">${tot.toFixed(2)} ₺</td>
+</tr></tfoot></table>`;
+box.innerHTML = html;
+
+} else if (tur === 'mustahsil-islemleri') {
+document.getElementById('r-baslik-ana').innerText = "TÜM MÜSTAHSİL İŞLEMLERİ RAPORU";
+document.getElementById('r-bilgi').innerText = `Tarih: ${bas || 'İlk'} / ${bit || 'Bugün'}`;
+
+let liste = DB.hareketler.filter(h => (h.tip === 'Alis' || h.tip === 'Odeme' || (h.tip === 'Manuel_Islem' && DB.cariler.find(c=>c.id===h.cariId)?.tur==='Tedarikci')) && (!bas || h.tarih >= bas) && (!bit || h.tarih <= bit + 'T23:59:59'));
+let html = `<table class="w-full text-left border"><thead class="bg-slate-100"><tr>
+<th class="p-2">Tarih</th><th class="p-2">Müstahsil</th><th class="p-2">İşlem</th><th class="p-2">Detay</th><th class="p-2">Açıklama</th><th class="p-2 text-right">Tutar</th>
+</tr></thead><tbody class="divide-y">`;
+
+let tot = 0;
+liste.forEach(h => {
+tot += h.toplam;
+let detay = (h.kalemler || []).map(k => `<span class="inline-block bg-sky-50 text-sky-800 px-1 py-0.5 rounded font-bold">${k.urun} (${k.miktar} ${k.birimTuru || 'kg'})</span>`).join(' ');
+if (h.kasaBedeli > 0) detay += ` + Kasa Bedeli: ${h.kasaBedeli.toFixed(2)}₺`;
+html += `<tr>
+<td class="p-2">${h.tarih.split('T')[0]}</td>
+<td class="p-2 font-bold">${h.cariAd}</td>
+<td class="p-2">${h.tip}</td>
+<td class="p-2">${detay || '-'}</td>
+<td class="p-2 text-slate-500 italic">${h.aciklama || '-'}</td>
+<td class="p-2 text-right font-bold text-sky-700">${h.toplam.toFixed(2)} ₺</td>
+</tr>`;
+});
+html += `</tbody><tfoot class="bg-slate-50 font-bold border-t"><tr>
+<td colspan="5" class="p-2 text-right">TOPLAM TUTAR:</td>
+<td class="p-2 text-right text-sky-700">${tot.toFixed(2)} ₺</td>
+</tr></tfoot></table>`;
+box.innerHTML = html;
+
+} else if (tur === 'urun-ozet') {
+document.getElementById('r-baslik-ana').innerText = "SEÇİLİ ÜRÜNLERİN SATIŞ VE KÂR ÖZETİ";
+document.getElementById('r-bilgi').innerText = `Tarih: ${bas || 'İlk'} / ${bit || 'Bugün'}`;
+
+const seciliUrunler = Array.from(document.querySelectorAll('.r-urun-cb:checked')).map(cb => cb.value);
+const urunOzet = {};
+
+DB.hareketler.filter(h => h.tip === 'Satis' && (!bas || h.tarih >= bas) && (!bit || h.tarih <= bit + 'T23:59:59')).forEach(h => {
+(h.kalemler || []).forEach(k => {
+if (!seciliUrunler.includes(k.urun)) return;
+if (!urunOzet[k.urun]) urunOzet[k.urun] = { miktar: 0, birim: k.birimTuru || 'kg', ciro: 0, maliyet: 0, kar: 0 };
+urunOzet[k.urun].miktar += k.miktar;
+urunOzet[k.urun].ciro += k.toplam;
+const sm = k.miktar * (k.birimMaliyet || 0);
+urunOzet[k.urun].maliyet += sm;
+urunOzet[k.urun].kar += (k.toplam - sm);
+});
+});
+
+let html = `<table class="w-full text-left border"><thead class="bg-slate-100"><tr>
+<th class="p-2">Ürün</th><th class="p-2 text-right">Satılan Miktar</th><th class="p-2 text-right">Ciro</th><th class="p-2 text-right">Alış Maliyeti</th><th class="p-2 text-right">Brüt Kâr</th><th class="p-2 text-right">Kâr Marjı</th>
+</tr></thead><tbody class="divide-y">`;
+
+let gCiro = 0, gMaliyet = 0, gKar = 0;
+Object.keys(urunOzet).forEach(u => {
+const it = urunOzet[u];
+gCiro += it.ciro; gMaliyet += it.maliyet; gKar += it.kar;
+const marj = it.ciro > 0 ? ((it.kar / it.ciro) * 100).toFixed(1) : 0;
+html += `<tr>
+<td class="p-2 font-bold">${u}</td>
+<td class="p-2 text-right">${it.miktar.toFixed(2)} ${it.birim}</td>
+<td class="p-2 text-right">${it.ciro.toFixed(2)} ₺</td>
+<td class="p-2 text-right text-slate-500">${it.maliyet.toFixed(2)} ₺</td>
+<td class="p-2 text-right font-bold ${it.kar >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${it.kar.toFixed(2)} ₺</td>
+<td class="p-2 text-right font-bold">%${marj}</td>
+</tr>`;
+});
+
+const gMarj = gCiro > 0 ? ((gKar / gCiro) * 100).toFixed(1) : 0;
+html += `</tbody><tfoot class="bg-slate-50 font-bold border-t"><tr>
+<td class="p-2">TOPLAM:</td><td></td>
+<td class="p-2 text-right">${gCiro.toFixed(2)} ₺</td>
+<td class="p-2 text-right">${gMaliyet.toFixed(2)} ₺</td>
+<td class="p-2 text-right text-emerald-700">${gKar.toFixed(2)} ₺</td>
+<td class="p-2 text-right text-emerald-700">%${gMarj}</td>
+</tr></tfoot></table>`;
+box.innerHTML = html;
+
+} else if (tur === 'gider-raporu') {
+document.getElementById('r-baslik-ana').innerText = "MASRAFLAR VE NET KÂR RAPORU";
+document.getElementById('r-bilgi').innerText = `Tarih: ${bas || 'İlk'} / ${bit || 'Bugün'}`;
+
+let giderler = DB.hareketler.filter(h => h.tip === 'Gider' && (!bas || h.tarih >= bas) && (!bit || h.tarih <= bit + 'T23:59:59'));
+let toplamGider = giderler.reduce((acc, h) => acc + h.toplam, 0);
+
+let satislar = DB.hareketler.filter(h => h.tip === 'Satis' && (!bas || h.tarih >= bas) && (!bit || h.tarih <= bit + 'T23:59:59'));
+let toplamCiro = satislar.reduce((acc, h) => acc + h.toplam, 0);
+let toplamBrutKar = satislar.reduce((acc, h) => acc + (h.kar || 0), 0);
+let netKar = toplamBrutKar - toplamGider;
+
+let html = `
+<div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+<div class="p-3 bg-slate-50 border rounded-xl"><span class="text-slate-500 font-bold">Toplam Ciro</span><div class="text-base font-black">${toplamCiro.toFixed(2)} ₺</div></div>
+<div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl"><span class="text-emerald-700 font-bold">Brüt Kâr</span><div class="text-base font-black text-emerald-700">${toplamBrutKar.toFixed(2)} ₺</div></div>
+<div class="p-3 bg-rose-50 border border-rose-200 rounded-xl"><span class="text-rose-700 font-bold">Toplam Masraf</span><div class="text-base font-black text-rose-700">${toplamGider.toFixed(2)} ₺</div></div>
+<div class="p-3 bg-indigo-50 border border-indigo-200 rounded-xl"><span class="text-indigo-700 font-bold">NET KÂR</span><div class="text-lg font-black ${netKar >= 0 ? 'text-indigo-700' : 'text-rose-700'}">${netKar.toFixed(2)} ₺</div></div>
+</div>
+<table class="w-full text-left border"><thead class="bg-slate-100"><tr>
+<th class="p-2">Tarih</th><th class="p-2">Kategori</th><th class="p-2">Açıklama</th><th class="p-2 text-right">Tutar</th>
+</tr></thead><tbody class="divide-y">
+`;
+giderler.forEach(g => {
+html += `<tr>
+<td class="p-2">${g.tarih.split('T')[0]}</td>
+<td class="p-2 font-bold">${g.kategori}</td>
+<td class="p-2 text-slate-500 italic">${g.aciklama || '-'}</td>
+<td class="p-2 text-right font-bold text-rose-700">${g.toplam.toFixed(2)} ₺</td>
+</tr>`;
+});
+html += `</tbody><tfoot class="bg-slate-50 font-bold border-t"><tr>
+<td colspan="3" class="p-2 text-right">TOPLAM GİDER:</td>
+<td class="p-2 text-right text-rose-700">${toplamGider.toFixed(2)} ₺</td>
+</tr></tfoot></table>`;
+box.innerHTML = html;
+
+} else if (tur === 'fire-raporu') {
+document.getElementById('r-baslik-ana').innerText = "DEPO FİRE & ÇÜRÜK RAPORU (ZARAR ANALİZİ)";
+document.getElementById('r-bilgi').innerText = `Tarih: ${bas || 'İlk'} / ${bit || 'Bugün'}`;
+
+let fireler = DB.hareketler.filter(h => h.tip === 'Fire' && (!bas || h.tarih >= bas) && (!bit || h.tarih <= bit + 'T23:59:59'));
+let toplamZarar = fireler.reduce((acc, h) => acc + h.toplam, 0);
+
+let html = `
+<div class="mb-3 p-3 bg-rose-50 border border-rose-200 rounded-xl flex justify-between items-center">
+<span class="font-bold text-rose-900">Toplam Fire Zararı (Çöpe Giden):</span>
+<span class="text-lg font-black text-rose-700">${toplamZarar.toFixed(2)} ₺</span>
+</div>
+<table class="w-full text-left border"><thead class="bg-slate-100"><tr>
+<th class="p-2">Tarih</th><th class="p-2">Ürün</th><th class="p-2">Miktar & Kasa</th><th class="p-2">Açıklama / Neden</th><th class="p-2 text-right">Maliyet Zararı</th>
+</tr></thead><tbody class="divide-y">
+`;
+
+if (fireler.length === 0) {
+html += `<tr><td colspan="5" class="p-4 text-center text-slate-400">Bu dönemde kayıtlı fire bulunmuyor.</td></tr>`;
+} else {
+fireler.forEach(f => {
+const kd = f.kasaMiktar > 0 ? ` (${f.kasaMiktar} Kasa)` : '';
+html += `<tr>
+<td class="p-2">${f.tarih.split('T')[0]}</td>
+<td class="p-2 font-bold text-slate-900">${f.urun}</td>
+<td class="p-2 font-bold text-rose-700">${f.miktar} ${f.birim}${kd}</td>
+<td class="p-2 text-slate-500 italic">${f.aciklama || '-'}</td>
+<td class="p-2 text-right font-black text-rose-800">${f.toplam.toFixed(2)} ₺</td>
+</tr>`;
+});
+}
+
+html += `</tbody><tfoot class="bg-slate-50 font-bold border-t"><tr>
+<td colspan="4" class="p-2 text-right">TOPLAM ZARAR:</td>
+<td class="p-2 text-right text-rose-700">${toplamZarar.toFixed(2)} ₺</td>
+</tr></tfoot></table>`;
+box.innerHTML = html;
+}
+}
+
+function cariEkstreGoster(cid, tur) {
+document.getElementById('r-tur').value = 'tek-cari';
+raporTuruDegisti();
+if (tur) raporCariTurDegis(tur);
+document.getElementById('r-cari').value = cid;
+tab('rapor');
+}
+
+// ================= KASA, FİRE & RENDER =================
+function kasaIslemi(e, tip) {
+e.preventDefault();
+const cariId = document.getElementById(tip === 'Tahsilat' ? 'k-tahsilat-cari' : 'k-odeme-cari').value;
+const cari = DB.cariler.find(c => c.id === cariId);
+const tutar = parseFloat(document.getElementById(tip === 'Tahsilat' ? 'k-tahsilat-tutar' : 'k-odeme-tutar').value);
+const aciklama = document.getElementById(tip === 'Tahsilat' ? 'k-tahsilat-aciklama' : 'k-odeme-aciklama').value;
+const tarihInput = document.getElementById(tip === 'Tahsilat' ? 'k-tahsilat-tarih' : 'k-odeme-tarih').value;
+const tarih = tarihBirlestir(tarihInput);
+
+if (tip === 'Tahsilat' && cari) { cari.bakiye -= tutar; }
+else if (tip === 'Odeme' && cari) { cari.bakiye += tutar; }
+
+DB.hareketler.unshift({
+id: 'H_' + Date.now(), tip, tarih,
+cariId, cariAd: cari ? cari.ad : 'Kasa', toplam: tutar, aciklama
+});
+save();
+e.target.reset();
+
+const bugun = new Date().toISOString().split('T')[0];
+document.getElementById('k-tahsilat-tarih').value = bugun;
+document.getElementById('k-odeme-tarih').value = bugun;
+alert('Kasa hareketi işlendi.');
+}
+
+function fireModalAc() {
+const u = prompt('Fire düşülecek ürün adı:');
+if (!u || !DB.stoklar[u]) { alert('Ürün bulunamadı!'); return; }
+const item = DB.stoklar[u];
+const b = item.birim || 'kg';
+const miktar = parseFloat(prompt(`${u} için düşülecek fire miktarı (${b}):`));
+if (!miktar || miktar <= 0) return;
+
+let kasaMiktar = 0;
+if (item.kasaMiktar > 0) {
+kasaMiktar = parseInt(prompt(`Düşülecek kasa adedi (Opsiyonel, Stokta ${item.kasaMiktar} kasa var):`, '0')) || 0;
+}
+const aciklama = prompt('Fire / Çürük nedeni (Opsiyonel):', 'Bozulma/Ezik') || 'Fire';
+
+if (confirm(`${u} ürününden ${miktar} ${b}${kasaMiktar > 0 ? ` ve ${kasaMiktar} Kasa` : ''} fire düşülecektir?`)) {
+const bm = item.miktar > 0 ? (item.maliyet / item.miktar) : 0;
+const zararTutari = bm * miktar;
+
+item.miktar = Math.max(0, item.miktar - miktar);
+item.maliyet = Math.max(0, item.maliyet - zararTutari);
+if (kasaMiktar > 0) item.kasaMiktar = Math.max(0, item.kasaMiktar - kasaMiktar);
+
+DB.hareketler.unshift({
+id: 'H_' + Date.now(), tip: 'Fire', tarih: tarihBirlestir(),
+urun: u, miktar, birim: b, kasaMiktar, toplam: zararTutari, aciklama
+});
+
+save();
+alert('Fire düşüldü ve zarar raporuna kaydedildi.');
+}
+}
+
+function render() {
+let ciro = 0, brutKar = 0, toplamGider = 0, kasa = 0;
+let piyasaAlacak = 0, piyasaBorc = 0;
+const bugun = new Date().toISOString().split('T')[0];
+
+DB.hareketler.forEach(h => {
+if (h.tip === 'Satis') {
+if (h.tarih.startsWith(bugun)) ciro += h.toplam;
+brutKar += (h.kar || 0);
+if (h.odeme === 'Pesin') kasa += h.toplam;
+else if (h.odeme === 'Kismi') kasa += (h.pesinat || 0);
+} else if (h.tip === 'Alis') {
+if (h.odeme === 'Odendi') kasa -= h.toplam;
+if (h.nakliye > 0) kasa -= h.nakliye; // Nakit nakliye kasadan düşer
+} else if (h.tip === 'Tahsilat') kasa += h.toplam;
+else if (h.tip === 'Odeme') kasa -= h.toplam;
+else if (h.tip === 'Gider') {
+toplamGider += h.toplam;
+kasa -= h.toplam;
+}
+});
+
+DB.cariler.forEach(c => {
+if (c.tur === 'Musteri') {
+if (c.bakiye > 0) piyasaAlacak += c.bakiye;
+else if (c.bakiye < 0) piyasaBorc += Math.abs(c.bakiye);
+} else {
+if (c.bakiye < 0) piyasaBorc += Math.abs(c.bakiye);
+else if (c.bakiye > 0) piyasaAlacak += c.bakiye;
+}
+});
+
+let netKar = brutKar - toplamGider;
+
+document.getElementById('o-ciro').innerText = ciro.toFixed(2) + ' ₺';
+document.getElementById('o-gider').innerText = toplamGider.toFixed(2) + ' ₺';
+document.getElementById('o-brutkar').innerText = `Brüt Kâr: ${brutKar.toFixed(2)} ₺`;
+document.getElementById('o-netkar').innerText = netKar.toFixed(2) + ' ₺';
+document.getElementById('o-alacak').innerText = piyasaAlacak.toFixed(2) + ' ₺';
+document.getElementById('o-borc').innerText = piyasaBorc.toFixed(2) + ' ₺';
+document.getElementById('o-kasa').innerText = kasa.toFixed(2) + ' ₺';
+
+const doldur = (id, filtre) => {
+const el = document.getElementById(id);
+if (!el) return;
+const cur = el.value;
+el.innerHTML = '<option value="">Seçiniz...</option>';
+DB.cariler.filter(c => !filtre || c.tur === filtre).forEach(c => {
+el.innerHTML += `<option value="${c.id}">${c.ad}</option>`;
+});
+if (cur) el.value = cur;
+};
+doldur('s-cari', 'Musteri');
+doldur('a-cari', 'Tedarikci');
+doldur('k-tahsilat-cari', 'Musteri');
+doldur('k-odeme-cari', 'Tedarikci');
+
+const gkSel = document.getElementById('g-kategori');
+if (gkSel) gkSel.innerHTML = DB.giderKategorileri.map(k => `<option value="${k}">${k}</option>`).join('');
+
+const dl = document.getElementById('urun-listesi');
+if (dl) dl.innerHTML = Object.keys(DB.stoklar).map(u => `<option value="${u}">`).join('');
+
+let sHtml = '';
+Object.keys(DB.stoklar).forEach(k => {
+const s = DB.stoklar[k];
+const bTuru = s.birim || 'kg';
+const birim = s.miktar > 0 ? (s.maliyet / s.miktar).toFixed(2) : '0.00';
+const kasaDetay = s.kasaMiktar > 0 ? `<span class="bg-amber-100 text-amber-800 text-[10px] font-black px-1.5 py-0.5 rounded ml-1">${s.kasaMiktar} Kasa</span>` : '';
+sHtml += `<tr>
+<td class="p-2.5 font-bold">${k}</td>
+<td class="p-2.5 font-bold text-indigo-900">${s.miktar.toFixed(2)} <span class="text-xs uppercase text-slate-500 font-semibold">${bTuru}</span>${kasaDetay}</td>
+<td class="p-2.5 text-emerald-700 font-bold">${birim} ₺ / ${bTuru}</td>
+<td class="p-2.5 font-bold">${s.maliyet.toFixed(2)} ₺</td>
+<td class="p-2.5 text-right space-x-1 whitespace-nowrap">
+<button onclick="urunDuzenle('${k}')" class="text-indigo-600 hover:underline font-bold text-[11px]">Düzenle</button>
+<button onclick="urunStoktanSil('${k}')" class="text-rose-500 hover:underline font-bold ml-1 text-[11px]">Sil</button>
+</td>
+</tr>`;
+});
+document.getElementById('stok-tablosu').innerHTML = sHtml || '<tr><td colspan="5" class="p-3 text-slate-400 text-center">Stok boş.</td></tr>';
+
+let sonHtml = '';
+DB.hareketler.filter(h => h.tip === 'Satis').slice(0, 5).forEach(h => {
+const kalemOzet = (h.kalemler || []).map(k => `${k.urun} (${k.miktar} ${k.birimTuru || 'kg'})`).join(', ');
+sonHtml += `<tr><td class="p-2.5">${h.tarih.split('T')[0]}</td><td class="p-2.5 font-bold">${h.cariAd}</td><td class="p-2.5 text-slate-600 truncate max-w-xs">${kalemOzet}</td><td class="p-2.5 text-slate-400 truncate max-w-xs">${h.aciklama || '-'}</td><td class="p-2.5 font-bold text-emerald-600">${h.toplam.toFixed(2)} ₺</td></tr>`;
+});
+document.getElementById('son-satis-tablosu').innerHTML = sonHtml || '<tr><td colspan="5" class="p-3 text-slate-400 text-center">Henüz satış yok.</td></tr>';
+
+renderCariTablosu();
+renderHareketTablosu();
+satisUrunDropdownlariniGuncelle();
+}
+</script>
+</body>
+</html>
